@@ -6,7 +6,7 @@ import { SidebarToggle } from "./SidebarToggle";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Bot } from "lucide-react";
+import { Building2 } from "lucide-react";
 import { Menu } from "./Menu";
 
 export function Sidebar() {
@@ -59,7 +59,9 @@ export function Sidebar() {
                   : "translate-x-0 opacity-100"
               )}
             >
-              <Bot />
+              <div className="bg-primary w-10 h-10 rounded-md inline-flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-primary-foreground" />
+              </div>
             </div>
           </Link>
         </Button>
