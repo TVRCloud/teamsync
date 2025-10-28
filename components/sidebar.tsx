@@ -46,8 +46,8 @@ export function Sidebar() {
               )}
             >
               <div>
-                <h1 className="text-lg font-semibold">CYPHER</h1>
-                <p className="text-xs text-muted-foreground">Bot Admin</p>
+                <h1 className="text-lg font-semibold">WORKEE</h1>
+                <p className="text-xs text-muted-foreground">CRM Admin</p>
               </div>
             </div>
 
@@ -76,7 +76,7 @@ export function Sidebar() {
               : "opacity-0 -translate-y-4 pointer-events-none"
           )}
         >
-          © 2025 Cypher
+          © 2025 AMZ
         </div>
       </div>
     </aside>
