@@ -46,7 +46,7 @@ export function Sidebar() {
               )}
             >
               <div>
-                <h1 className="text-lg font-semibold">WORKEE</h1>
+                <h1 className="text-lg font-semibold">TeamSync</h1>
                 <p className="text-xs text-muted-foreground">CRM Admin</p>
               </div>
             </div>
@@ -59,7 +59,7 @@ export function Sidebar() {
                   : "translate-x-0 opacity-100"
               )}
             >
-              <div className="bg-primary w-10 h-10 rounded-md inline-flex items-center justify-center">
+              <div className="w-10 h-10 rounded-md bg-linear-to-br from-primary to-secondary flex items-center justify-center">
                 <Building2 className="w-6 h-6 text-primary-foreground" />
               </div>
             </div>
