@@ -8,8 +8,11 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Building2 } from "lucide-react";
 import { Menu } from "./Menu";
+import { useAuth } from "@/hooks/useUser";
 
 export function Sidebar() {
+  const { user, isLoading } = useAuth();
+
   const sidebar = useStore(useSidebar, (x) => x);
   if (!sidebar) return null;
   const { isOpen, toggleOpen, getOpenState, setIsHover, settings } = sidebar;
@@ -47,7 +50,14 @@ export function Sidebar() {
             >
               <div>
                 <h1 className="text-lg font-semibold">TeamSync</h1>
-                <p className="text-xs text-muted-foreground">CRM Admin</p>
+                <p className="text-xs text-muted-foreground">
+                  CRM{" "}
+                  {isLoading ? (
+                    ""
+                  ) : (
+                    <span className="uppercase">{user?.role}</span>
+                  )}
+                </p>
               </div>
             </div>
 
