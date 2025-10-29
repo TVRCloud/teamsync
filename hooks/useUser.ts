@@ -1,6 +1,7 @@
+import { fetchUsers } from "@/lib/api-client";
 import { useUserStore } from "@/store/useUserStore";
 import { apiClient } from "@/utils/axios";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 export function useAuth() {
   const { user, setUser } = useUserStore();
@@ -19,3 +20,17 @@ export function useAuth() {
 
   return { user: user ?? data, isLoading, isError, error };
 }
+
+export const useInfiniteUsers = (search: string) => {
+  return useInfiniteQuery({
+    queryKey: ["all-users", search],
+    queryFn: ({ pageParam = 0 }) =>
+      fetchUsers({
+        skip: pageParam,
+        search,
+      }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length < 20 ? undefined : allPages.length * 20,
+  });
+};
