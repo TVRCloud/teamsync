@@ -33,9 +33,12 @@ import {
 } from "@/components/ui/form";
 import { SignupFormValues, SignupSchema } from "@/schemas/auth";
 import { registerAction } from "@/app/(auth)/actions/auth";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const SignupMain = () => {
-  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(SignupSchema),
@@ -46,9 +49,30 @@ const SignupMain = () => {
     },
   });
 
-  const {
-    formState: { isSubmitting },
-  } = form;
+  const onSubmit = async (values: SignupFormValues) => {
+    setLoading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("email", values.email);
+      formData.append("password", values.password);
+
+      const res = await registerAction(formData);
+
+      if (!res.success) {
+        toast.error(res.message);
+      } else {
+        toast.success(res.message);
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
@@ -98,7 +122,10 @@ const SignupMain = () => {
 
           <CardContent>
             <Form {...form}>
-              <form action={registerAction} className="space-y-5">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-5"
+              >
                 {/* Full Name */}
                 <FormField
                   control={form.control}
@@ -156,23 +183,10 @@ const SignupMain = () => {
                           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                           <Input
                             {...field}
-                            type={showPassword ? "text" : "password"}
+                            type={"password"}
                             placeholder="••••••••"
                             className="pl-10 pr-10"
                           />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                          >
-                            {showPassword ? (
-                              <EyeOff className="w-4 h-4 text-muted-foreground" />
-                            ) : (
-                              <Eye className="w-4 h-4 text-muted-foreground" />
-                            )}
-                          </Button>
                         </div>
                       </FormControl>
                       <p className="text-xs text-muted-foreground">
@@ -187,10 +201,10 @@ const SignupMain = () => {
                 <Button
                   type="submit"
                   className="w-full group"
-                  disabled={isSubmitting}
+                  disabled={loading}
                   size="lg"
                 >
-                  {isSubmitting ? (
+                  {loading ? (
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{
@@ -201,9 +215,11 @@ const SignupMain = () => {
                       className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full"
                     />
                   ) : (
-                    <>Create Account</>
+                    <>
+                      Create Account
+                      <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </>
                   )}
-                  <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </form>
             </Form>
