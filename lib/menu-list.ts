@@ -135,11 +135,6 @@ export function getMenuList(pathname: string): Group[] {
     {
       groupLabel: "Settings",
       menus: [
-        {
-          href: "/settings/profile",
-          label: "Profile Settings",
-          icon: UserCog,
-        },
         // {
         //   href: "/settings/workspace",
         //   label: "Workspace Settings",
