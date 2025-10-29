@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 
 const SECRET_KEY = new TextEncoder().encode(config.jwt.secret);
+const EXPIRES_IN = config.jwt.expiresIn;
 
 export async function hashPassword(password: string): Promise<string> {
   const salt = await bcrypt.genSalt(12);
@@ -20,7 +21,7 @@ export async function verifyPassword(
 
 export async function createToken(
   payload: Record<string, any>,
-  expiresIn = "1h"
+  expiresIn = EXPIRES_IN
 ) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
