@@ -40,3 +40,18 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export async function POST(request: Request) {
+  try {
+    await connectDB();
+    const { name, email, password } = await request.json();
+    const user = await users.create({ name, email, password });
+    return NextResponse.json(user, { status: 200 });
+  } catch (error) {
+    console.error("POST /api/users error:", error);
+    return NextResponse.json(
+      { error: "Failed to create user" },
+      { status: 500 }
+    );
+  }
+}
