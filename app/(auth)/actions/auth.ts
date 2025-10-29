@@ -3,7 +3,6 @@
 import connectDB from "@/lib/mongodb";
 import users from "@/models/users";
 import { hashPassword, setSession } from "@/utils/auth";
-import { redirect } from "next/navigation";
 
 export async function registerAction(formData: FormData) {
   const name = formData.get("name") as string;
@@ -31,7 +30,7 @@ export async function registerAction(formData: FormData) {
 
   await setSession(user);
 
-  redirect("/dashboard");
+  return { success: true, message: "Account created successfully" };
 }
 
 export async function loginAction(formData: FormData) {
