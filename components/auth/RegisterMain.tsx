@@ -4,8 +4,6 @@ import { motion } from "framer-motion";
 import {
   Mail,
   Lock,
-  Eye,
-  EyeOff,
   ArrowRight,
   Building2,
   Sparkles,
