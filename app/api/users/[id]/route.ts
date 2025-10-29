@@ -7,9 +7,10 @@ import users from "@/models/users";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params;
     const cookieStore = cookies();
     const token = (await cookieStore).get(config.session.cookieName)?.value;
 
@@ -23,7 +24,7 @@ export async function GET(
     }
 
     await connectDB();
-    const user = await users.findById(params.id).select("-password");
+    const user = await users.findById(id).select("-password");
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -39,98 +40,100 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const cookieStore = cookies();
-    const token = (await cookieStore).get(config.session.cookieName)?.value;
+// export async function PATCH(
+//   request: NextRequest,
+//   context: { params: Promise<{ id: string }> }
+// ) {
+//   try {
+//     const { id } = await context.params;
 
-    if (!token) {
-      return NextResponse.json({ error: "Please log in" }, { status: 401 });
-    }
+//     const cookieStore = cookies();
+//     const token = (await cookieStore).get(config.session.cookieName)?.value;
 
-    const decoded = await verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
+//     if (!token) {
+//       return NextResponse.json({ error: "Please log in" }, { status: 401 });
+//     }
 
-    await connectDB();
+//     const decoded = await verifyToken(token);
+//     if (!decoded) {
+//       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+//     }
 
-    const userId = params.id;
-    const requesterId = decoded.id;
-    const isAdmin = decoded.role === "admin";
+//     await connectDB();
 
-    if (userId !== requesterId && !isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
+//     const userId = id;
+//     const requesterId = decoded.id;
+//     const isAdmin = decoded.role === "admin";
 
-    const body = await request.json();
+//     if (userId !== requesterId && !isAdmin) {
+//       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+//     }
 
-    // Disallow password change
-    delete body.password;
+//     const body = await request.json();
 
-    const updatedUser = await users
-      .findByIdAndUpdate(userId, { $set: body }, { new: true })
-      .select("-password");
+//     // Disallow password change
+//     delete body.password;
 
-    if (!updatedUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
+//     const updatedUser = await users
+//       .findByIdAndUpdate(userId, { $set: body }, { new: true })
+//       .select("-password");
 
-    return NextResponse.json(updatedUser, { status: 200 });
-  } catch (error) {
-    console.error("PATCH /api/users/[id] error:", error);
-    return NextResponse.json(
-      { error: "Failed to update user" },
-      { status: 500 }
-    );
-  }
-}
+//     if (!updatedUser) {
+//       return NextResponse.json({ error: "User not found" }, { status: 404 });
+//     }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const cookieStore = cookies();
-    const token = (await cookieStore).get(config.session.cookieName)?.value;
+//     return NextResponse.json(updatedUser, { status: 200 });
+//   } catch (error) {
+//     console.error("PATCH /api/users/[id] error:", error);
+//     return NextResponse.json(
+//       { error: "Failed to update user" },
+//       { status: 500 }
+//     );
+//   }
+// }
 
-    if (!token) {
-      return NextResponse.json({ error: "Please log in" }, { status: 401 });
-    }
+// export async function DELETE(
+//   request: NextRequest,
+//   { params }: { params: { id: string } }
+// ) {
+//   try {
+//     const cookieStore = cookies();
+//     const token = (await cookieStore).get(config.session.cookieName)?.value;
 
-    const decoded = await verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
+//     if (!token) {
+//       return NextResponse.json({ error: "Please log in" }, { status: 401 });
+//     }
 
-    await connectDB();
+//     const decoded = await verifyToken(token);
+//     if (!decoded) {
+//       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+//     }
 
-    const userId = params.id;
-    const requesterId = decoded.id;
-    const isAdmin = decoded.role === "admin";
+//     await connectDB();
 
-    if (userId !== requesterId && !isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
+//     const userId = params.id;
+//     const requesterId = decoded.id;
+//     const isAdmin = decoded.role === "admin";
 
-    const deletedUser = await users.findByIdAndDelete(userId);
+//     if (userId !== requesterId && !isAdmin) {
+//       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+//     }
 
-    if (!deletedUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
+//     const deletedUser = await users.findByIdAndDelete(userId);
 
-    return NextResponse.json(
-      { message: "User deleted successfully" },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("DELETE /api/users/[id] error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete user" },
-      { status: 500 }
-    );
-  }
-}
+//     if (!deletedUser) {
+//       return NextResponse.json({ error: "User not found" }, { status: 404 });
+//     }
+
+//     return NextResponse.json(
+//       { message: "User deleted successfully" },
+//       { status: 200 }
+//     );
+//   } catch (error) {
+//     console.error("DELETE /api/users/[id] error:", error);
+//     return NextResponse.json(
+//       { error: "Failed to delete user" },
+//       { status: 500 }
+//     );
+//   }
+// }
