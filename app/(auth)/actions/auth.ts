@@ -2,7 +2,12 @@
 
 import connectDB from "@/lib/mongodb";
 import users from "@/models/users";
-import { hashPassword, setSession } from "@/utils/auth";
+import {
+  clearSession,
+  hashPassword,
+  setSession,
+  verifyPassword,
+} from "@/utils/auth";
 
 export async function registerAction(formData: FormData) {
   const name = formData.get("name") as string;
@@ -37,5 +42,28 @@ export async function loginAction(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  console.log(email, password);
+  if (!email || !password) {
+    return { message: "Email and password are required" };
+  }
+
+  await connectDB();
+
+  const user = await users.findOne({ email });
+  if (!user) {
+    return { message: "User not found" };
+  }
+
+  const isValid = await verifyPassword(password, user.password.trim());
+
+  if (!isValid) {
+    return { message: "Invalid password" };
+  }
+
+  await setSession(user);
+
+  return { success: true, message: "Login successful" };
+}
+
+export async function logoutAction() {
+  await clearSession();
 }
