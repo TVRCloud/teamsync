@@ -8,8 +8,11 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Building2 } from "lucide-react";
 import { Menu } from "./Menu";
+import { useAuth } from "@/hooks/useUser";
 
 export function Sidebar() {
+  const { user, isLoading } = useAuth();
+
   const sidebar = useStore(useSidebar, (x) => x);
   if (!sidebar) return null;
   const { isOpen, toggleOpen, getOpenState, setIsHover, settings } = sidebar;
@@ -46,8 +49,15 @@ export function Sidebar() {
               )}
             >
               <div>
-                <h1 className="text-lg font-semibold">WORKEE</h1>
-                <p className="text-xs text-muted-foreground">CRM Admin</p>
+                <h1 className="text-lg font-semibold">TeamSync</h1>
+                <p className="text-xs text-muted-foreground">
+                  CRM{" "}
+                  {isLoading ? (
+                    ""
+                  ) : (
+                    <span className="uppercase">{user?.role}</span>
+                  )}
+                </p>
               </div>
             </div>
 
@@ -59,7 +69,7 @@ export function Sidebar() {
                   : "translate-x-0 opacity-100"
               )}
             >
-              <div className="bg-primary w-10 h-10 rounded-md inline-flex items-center justify-center">
+              <div className="w-10 h-10 rounded-md bg-linear-to-br from-primary to-secondary flex items-center justify-center">
                 <Building2 className="w-6 h-6 text-primary-foreground" />
               </div>
             </div>

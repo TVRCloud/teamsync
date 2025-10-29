@@ -2,15 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  Building2,
-  Sparkles,
-} from "lucide-react";
+import { Mail, Lock, ArrowRight, Building2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,9 +24,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginFormValues, LoginSchema } from "@/schemas/auth";
 import { loginAction } from "@/app/(auth)/actions/auth";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const LoginMain = () => {
-  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(LoginSchema),
@@ -44,9 +39,29 @@ const LoginMain = () => {
     },
   });
 
-  const {
-    formState: { isSubmitting },
-  } = form;
+  const onSubmit = async (values: LoginFormValues) => {
+    setLoading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("email", values.email);
+      formData.append("password", values.password);
+
+      const res = await loginAction(formData);
+
+      if (!res.success) {
+        toast.error(res.message);
+      } else {
+        toast.success(res.message);
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
@@ -97,7 +112,10 @@ const LoginMain = () => {
 
           <CardContent>
             <Form {...form}>
-              <form action={loginAction} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 <FormField
                   control={form.control}
                   name="email"
@@ -129,24 +147,11 @@ const LoginMain = () => {
                         <div className="relative">
                           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                           <Input
-                            type={showPassword ? "text" : "password"}
+                            type={"password"}
                             placeholder="••••••••"
                             {...field}
                             className="pl-10 pr-10"
                           />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          >
-                            {showPassword ? (
-                              <EyeOff className="w-4 h-4 text-muted-foreground" />
-                            ) : (
-                              <Eye className="w-4 h-4 text-muted-foreground" />
-                            )}
-                          </Button>
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -166,11 +171,11 @@ const LoginMain = () => {
 
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={loading}
                   className="w-full group"
                   size="lg"
                 >
-                  {isSubmitting ? (
+                  {loading ? (
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{
