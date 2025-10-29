@@ -24,14 +24,14 @@ export async function GET() {
     const user = await users.findById(decoded.id).select("-password");
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 
     return NextResponse.json(user, { status: 200 });
   } catch (error) {
     console.error("GET /api/me error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch user" },
+      { error: "Failed to fetch profile" },
       { status: 500 }
     );
   }
