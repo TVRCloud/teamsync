@@ -29,7 +29,16 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get("limit") || "10");
     const search = searchParams.get("search") || "";
 
-    const query = search ? { name: { $regex: search, $options: "i" } } : {};
+    const query = search
+      ? {
+          $or: [
+            { name: { $regex: search, $options: "i" } },
+            {
+              email: { $regex: search, $options: "i" },
+            },
+          ],
+        }
+      : {};
 
     const userList = await users.find(query).skip(skip).limit(limit).lean();
 
