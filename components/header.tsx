@@ -10,7 +10,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sun, Moon, Monitor, LogOut, Loader2, User } from "lucide-react";
+import {
+  Sun,
+  Moon,
+  Monitor,
+  LogOut,
+  Loader2,
+  User,
+  Building2,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { logoutAction } from "@/app/(auth)/actions/auth";
 import { toast } from "sonner";
@@ -32,7 +40,13 @@ export function Header() {
   return (
     <div className="sticky top-0 z-10">
       <header className="flex h-16 items-center justify-between border-b bg-background px-4 md:px-6">
-        <div className="flex items-center space-x-4 flex-1"></div>
+        <div className="flex items-center space-x-4 flex-1">
+          <div className="block lg:hidden transition-[transform,opacity,display] ease-in-out duration-300">
+            <div className="w-10 h-10 rounded-md bg-linear-to-br from-primary to-secondary flex items-center justify-center">
+              <Building2 className="w-6 h-6 text-primary-foreground" />
+            </div>
+          </div>
+        </div>
 
         <div className="flex items-center space-x-4">
           {/* Theme Toggle */}
@@ -57,7 +71,7 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="hidden md:block">
+          <div className="block md:md">
             <MobileMenu />
           </div>
 
