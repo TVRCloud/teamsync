@@ -66,15 +66,15 @@ export function getMenuList(pathname: string): Group[] {
           label: "All Tasks",
           icon: ClipboardList,
         },
-        // {
-        //   href: "/projects",
-        //   label: "Projects",
-        //   icon: FolderKanban,
-        //   submenus: [
-        //     { href: "/projects/active", label: "Active Projects" },
-        //     { href: "/projects/completed", label: "Completed Projects" },
-        //   ],
-        // },
+        {
+          href: "/projects",
+          label: "Projects",
+          icon: FolderKanban,
+          submenus: [
+            { href: "/projects/active", label: "Active Projects" },
+            { href: "/projects/completed", label: "Completed Projects" },
+          ],
+        },
         {
           href: "/calendar",
           label: "Calendar View",
@@ -110,11 +110,11 @@ export function getMenuList(pathname: string): Group[] {
           label: "Chat",
           icon: MessageSquare,
         },
-        // {
-        //   href: "/notifications",
-        //   label: "Notifications",
-        //   icon: Bell,
-        // },
+        {
+          href: "/notifications",
+          label: "Notifications",
+          icon: Bell,
+        },
       ],
     },
     {
@@ -135,11 +135,11 @@ export function getMenuList(pathname: string): Group[] {
     {
       groupLabel: "Settings",
       menus: [
-        // {
-        //   href: "/settings/workspace",
-        //   label: "Workspace Settings",
-        //   icon: Briefcase,
-        // },
+        {
+          href: "/settings/workspace",
+          label: "Workspace Settings",
+          icon: Briefcase,
+        },
         {
           href: "/settings/app",
           label: "App Settings",
