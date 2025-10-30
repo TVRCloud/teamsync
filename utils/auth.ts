@@ -7,6 +7,13 @@ import { cookies } from "next/headers";
 const SECRET_KEY = new TextEncoder().encode(config.jwt.secret);
 const EXPIRES_IN = config.jwt.expiresIn;
 
+export interface DecodedToken {
+  id: string;
+  role: string;
+  iat?: number;
+  exp?: number;
+}
+
 export async function hashPassword(password: string): Promise<string> {
   const salt = await bcrypt.genSalt(12);
   return bcrypt.hash(password, salt);
@@ -33,7 +40,7 @@ export async function createToken(
 export async function verifyToken(token: string) {
   try {
     const { payload } = await jwtVerify(token, SECRET_KEY);
-    return payload;
+    return payload as unknown as DecodedToken;
   } catch {
     return null;
   }
