@@ -10,7 +10,6 @@ import {
   SlidersHorizontal,
   TableOfContents,
   User,
-  UserPlus,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { HeaderSection } from "../ui/header-section";
@@ -43,6 +42,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { DateTime } from "luxon";
+import AddMember from "./AddMember";
 
 const MembersMain = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -71,12 +71,7 @@ const MembersMain = () => {
       <HeaderSection
         title="Members"
         subtitle="Manage your organization's members."
-        actions={
-          <Button variant="default" size="sm">
-            <UserPlus className="mr-2 h-4 w-4" />
-            Add User
-          </Button>
-        }
+        actions={<AddMember />}
       />
       {/* Users Card */}
       <motion.div
