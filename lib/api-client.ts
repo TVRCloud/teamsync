@@ -26,3 +26,24 @@ export const createUser = async (data: {
   const res = await apiClient.post(`/api/users`, data);
   return res.data;
 };
+
+export const fetchLogs = async ({
+  skip,
+  action,
+  entityType,
+}: {
+  skip: number;
+  action?: string;
+  entityType?: string;
+}) => {
+  const params = new URLSearchParams({
+    skip: String(skip),
+    limit: "20",
+  });
+
+  if (action) params.append("action", action);
+  if (entityType) params.append("entityType", entityType);
+
+  const res = await apiClient.get(`/api/log?${params.toString()}`);
+  return res.data;
+};
