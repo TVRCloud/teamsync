@@ -16,3 +16,13 @@ export const fetchUsers = async ({
   const res = await apiClient.get(`/api/users?${params.toString()}`);
   return res.data;
 };
+
+export const createUser = async (data: {
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+}) => {
+  const res = await apiClient.post(`/api/users`, data);
+  return res.data;
+};
