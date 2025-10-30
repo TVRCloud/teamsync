@@ -73,7 +73,6 @@ const MembersMain = () => {
         subtitle="Manage your organization's members."
         actions={<AddMember />}
       />
-      {/* Users Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -254,7 +253,7 @@ const MembersMain = () => {
             </div>
 
             <div className="flex justify-center" ref={ref}>
-              <span className="p-4 text-center text-muted-foreground">
+              <span className="p-4 text-center text-muted-foreground text-xs">
                 {isFetchingNextPage
                   ? "Loading more..."
                   : hasNextPage
