@@ -1,7 +1,12 @@
-import { fetchUsers } from "@/lib/api-client";
+import { createUser, fetchUsers } from "@/lib/api-client";
 import { useUserStore } from "@/store/useUserStore";
 import { apiClient } from "@/utils/axios";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 export function useAuth() {
   const { user, setUser } = useUserStore();
@@ -32,5 +37,16 @@ export const useInfiniteUsers = (search: string) => {
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) =>
       lastPage.length < 20 ? undefined : allPages.length * 20,
+  });
+};
+
+export const useCreateUser = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-users"] });
+    },
   });
 };
