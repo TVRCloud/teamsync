@@ -1,9 +1,11 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { config } from "@/lib/config";
-import { verifyToken } from "@/utils/auth";
+import { hashPassword, verifyToken } from "@/utils/auth";
 import connectDB from "@/lib/mongodb";
 import users from "@/models/users";
+import { SignupSchema } from "@/schemas/auth";
+import { logActivity } from "@/utils/logger";
 
 export async function GET(request: Request) {
   try {
@@ -27,7 +29,16 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get("limit") || "10");
     const search = searchParams.get("search") || "";
 
-    const query = search ? { name: { $regex: search, $options: "i" } } : {};
+    const query = search
+      ? {
+          $or: [
+            { name: { $regex: search, $options: "i" } },
+            {
+              email: { $regex: search, $options: "i" },
+            },
+          ],
+        }
+      : {};
 
     const userList = await users.find(query).skip(skip).limit(limit).lean();
 
@@ -43,10 +54,53 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(config.session.cookieName)?.value;
+
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const decoded = await verifyToken(token);
+    if (!decoded || decoded.role !== "admin") {
+      return NextResponse.json(
+        { error: "Forbidden - Admin only" },
+        { status: 403 }
+      );
+    }
+
     await connectDB();
-    const { name, email, password } = await request.json();
-    const user = await users.create({ name, email, password });
-    return NextResponse.json(user, { status: 200 });
+    const body = await request.json();
+
+    const validated = SignupSchema.parse(body);
+
+    const existingUser = await users.findOne({ email: validated.email });
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "User already exists" },
+        { status: 400 }
+      );
+    }
+
+    const hashedPassword = await hashPassword(validated.password);
+
+    const user = await users.create({
+      ...validated,
+      password: hashedPassword,
+    });
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    await logActivity({
+      userId: decoded.id.toString(),
+      action: "create",
+      entityType: "user",
+      entityId: user._id.toString(),
+      message: `Created user ${validated.email}`,
+      metadata: { email: validated.email, role: validated.role },
+    });
+
+    return NextResponse.json(userResponse, { status: 201 });
   } catch (error) {
     console.error("POST /api/users error:", error);
     return NextResponse.json(

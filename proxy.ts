@@ -4,7 +4,7 @@ import { verifyToken } from "./utils/auth";
 import { canAccessRoute } from "./utils/check-access";
 import { authRoutes, protectedRoutes, publicRoutes } from "./lib/route-list";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   const isProtectedRoute = protectedRoutes.some((route) =>

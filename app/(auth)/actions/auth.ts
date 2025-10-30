@@ -8,6 +8,7 @@ import {
   setSession,
   verifyPassword,
 } from "@/utils/auth";
+import { logActivity } from "@/utils/logger";
 
 export async function registerAction(formData: FormData) {
   const name = formData.get("name") as string;
@@ -31,6 +32,14 @@ export async function registerAction(formData: FormData) {
     email,
     password: hashedPassword,
     role: "guest",
+  });
+
+  await logActivity({
+    userId: user._id.toString(),
+    action: "create",
+    entityType: "user",
+    entityId: user._id.toString(),
+    message: `Created user ${user.email}`,
   });
 
   await setSession(user);

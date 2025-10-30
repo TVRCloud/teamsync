@@ -2,7 +2,7 @@ import { Schema, model, models } from "mongoose";
 
 const ActivityLogSchema = new Schema(
   {
-    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    user: { type: Schema.Types.ObjectId, ref: "Users", required: true },
     action: {
       type: String,
       required: true,
@@ -16,37 +16,17 @@ const ActivityLogSchema = new Schema(
         "priority_change",
         "login",
         "logout",
-        "other",
       ],
       default: "other",
     },
     entityType: {
       type: String,
       required: true,
-      enum: [
-        "task",
-        "project",
-        "team",
-        "user",
-        "comment",
-        "workspace",
-        "timesheet",
-        "setting",
-      ],
+      enum: ["task", "project", "team", "user", "comment"],
     },
-    entityId: {
-      type: Schema.Types.ObjectId,
-      required: true,
-    },
-    message: {
-      type: String,
-      required: true,
-    },
-    metadata: {
-      // store extra info (e.g., previous values, status change details)
-      type: Schema.Types.Mixed,
-      default: {},
-    },
+    entityId: { type: Schema.Types.ObjectId, required: true },
+    message: { type: String, required: true },
+    metadata: { type: Schema.Types.Mixed, default: {} },
   },
   { timestamps: true }
 );

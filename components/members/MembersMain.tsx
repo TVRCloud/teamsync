@@ -10,7 +10,6 @@ import {
   SlidersHorizontal,
   TableOfContents,
   User,
-  UserPlus,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { HeaderSection } from "../ui/header-section";
@@ -43,6 +42,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { DateTime } from "luxon";
+import AddMember from "./AddMember";
 
 const MembersMain = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -71,14 +71,8 @@ const MembersMain = () => {
       <HeaderSection
         title="Members"
         subtitle="Manage your organization's members."
-        actions={
-          <Button variant="default" size="sm">
-            <UserPlus className="mr-2 h-4 w-4" />
-            Add User
-          </Button>
-        }
+        actions={<AddMember />}
       />
-      {/* Users Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -259,7 +253,7 @@ const MembersMain = () => {
             </div>
 
             <div className="flex justify-center" ref={ref}>
-              <span className="p-4 text-center text-muted-foreground">
+              <span className="p-4 text-center text-muted-foreground text-xs">
                 {isFetchingNextPage
                   ? "Loading more..."
                   : hasNextPage
