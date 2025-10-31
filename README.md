@@ -114,10 +114,3 @@ This project helps teams manage projects, assign tasks, collaborate, and track p
 
 ---
 
-## 🪪 License
-
-MIT License — free to use and modify with attribution.
-
-```
-
-```
