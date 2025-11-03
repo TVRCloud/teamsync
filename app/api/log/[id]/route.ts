@@ -1,9 +1,7 @@
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { config } from "@/lib/config";
-import { verifyToken } from "@/utils/auth";
 import connectDB from "@/lib/mongodb";
 import ActivityLog from "@/models/log";
+import { authenticateUser } from "@/lib/authenticateUser";
 
 export async function GET(
   request: NextRequest,
@@ -11,23 +9,8 @@ export async function GET(
 ) {
   try {
     const { id } = await context.params;
-    const cookieStore = cookies();
-    const token = (await cookieStore).get(config.session.cookieName)?.value;
-
-    if (!token) {
-      return NextResponse.json({ error: "Please log in" }, { status: 401 });
-    }
-
-    const decoded = await verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
-    if (decoded && decoded.role !== "admin") {
-      return NextResponse.json(
-        { error: "Forbidden - Admin only" },
-        { status: 403 }
-      );
-    }
+    const { errorResponse } = await authenticateUser(["admin"]);
+    if (errorResponse) return errorResponse;
 
     await connectDB();
     const log = await ActivityLog.find({ user: id });
