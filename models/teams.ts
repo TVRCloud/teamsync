@@ -10,4 +10,4 @@ const TeamSchema = new Schema(
   { timestamps: true }
 );
 
-export default models.Team || model("Team", TeamSchema);
+export default models.Teams || model("Teams", TeamSchema, "teams");

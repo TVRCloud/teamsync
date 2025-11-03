@@ -1,5 +1,8 @@
 import { apiClient } from "@/utils/axios";
 
+// ---------------------------
+// -----------USER------------
+// ---------------------------
 export const fetchUsers = async ({
   skip,
   search,
@@ -27,6 +30,9 @@ export const createUser = async (data: {
   return res.data;
 };
 
+// ---------------------------
+// -----------LOGS------------
+// ---------------------------
 export const fetchLogs = async ({
   skip,
   action,
@@ -45,5 +51,35 @@ export const fetchLogs = async ({
   if (entityType) params.append("entityType", entityType);
 
   const res = await apiClient.get(`/api/log?${params.toString()}`);
+  return res.data;
+};
+
+// ---------------------------
+// ----------PROJECTS---------
+// ---------------------------
+
+export const createProject = async (data: {
+  name: string;
+  description?: string;
+  color: string;
+}) => {
+  const res = await apiClient.post(`/api/projects`, data);
+  return res.data;
+};
+
+export const fetchProjects = async ({
+  skip,
+  search,
+}: {
+  skip: number;
+  search: string;
+}) => {
+  const params = new URLSearchParams({
+    skip: String(skip),
+    limit: "20",
+    search,
+  });
+
+  const res = await apiClient.get(`/api/projects?${params.toString()}`);
   return res.data;
 };

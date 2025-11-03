@@ -166,7 +166,9 @@ const AddMember = () => {
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit">Add User</Button>
+              <Button disabled={addUser.isPending} type="submit">
+                {addUser.isPending ? "Adding..." : "Add User"}
+              </Button>
             </div>
           </form>
         </Form>

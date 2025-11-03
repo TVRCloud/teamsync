@@ -11,7 +11,7 @@ const UserSchema = new Schema(
       default: "member",
     },
     avatar: { type: String },
-    team: { type: Schema.Types.ObjectId, ref: "Team" },
+    teams: [{ type: Schema.Types.ObjectId, ref: "Teams" }],
     isActive: { type: Boolean, default: true },
   },
   {
