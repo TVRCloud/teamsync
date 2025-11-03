@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import {
+  Activity,
   AlertCircle,
   BarChart3,
   Briefcase,
@@ -26,6 +27,7 @@ import { motion } from "framer-motion";
 import { Badge } from "../ui/badge";
 import { Progress } from "../ui/progress";
 import { Separator } from "../ui/separator";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 
 const tasksByStatus = [
   {
@@ -414,7 +416,96 @@ const DashboardMain = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Top Performing Teams</CardTitle>
+                <CardDescription>Based on completion rate</CardDescription>
+              </div>
+              <Button variant="ghost" size="sm">
+                View All
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {topTeams.map((team, idx) => (
+              <motion.div
+                key={team.name}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted transition-colors cursor-pointer"
+              >
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback className="bg-linear-to-br from-primary to-secondary text-primary-foreground font-bold">
+                    {team.avatar}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="font-semibold">{team.name}</h3>
+                    <Badge variant="outline">{team.completion}%</Badge>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <span>{team.members} members</span>
+                    <Separator orientation="vertical" className="h-4" />
+                    <span>{team.projects} projects</span>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </motion.div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Recent Activity</CardTitle>
+                <CardDescription>Latest updates from your team</CardDescription>
+              </div>
+              <Button variant="ghost" size="sm">
+                <Activity className="w-4 h-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {recentActivity.map((activity, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="flex items-start gap-3"
+              >
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback className="text-xs bg-muted">
+                    {activity.avatar}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 space-y-1">
+                  <p className="text-sm">
+                    <span className="font-medium">{activity.user}</span>
+                    <span className="text-muted-foreground">
+                      {" "}
+                      {activity.action}{" "}
+                    </span>
+                    <span className="font-medium">{activity.entity}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {activity.time}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
