@@ -1,7 +1,8 @@
 import { authenticateUser } from "@/lib/authenticateUser";
 import connectDB from "@/lib/mongodb";
-import projects from "@/models/projects";
-import { createProjectSchema } from "@/schemas/project";
+import "@/models/users";
+import teams from "@/models/teams";
+import { createTeamSchema } from "@/schemas/teams";
 import { logActivity } from "@/utils/logger";
 import { NextResponse } from "next/server";
 
@@ -19,18 +20,19 @@ export async function GET(request: Request) {
 
     const query = search ? { name: { $regex: search, $options: "i" } } : {};
 
-    const projectList = await projects
+    const teamList = await teams
       .find(query)
       .populate("createdBy", "name email role")
+      // .populate("members", "name email role")
       .skip(skip)
       .limit(limit)
       .lean();
 
-    return NextResponse.json(projectList, { status: 200 });
+    return NextResponse.json(teamList, { status: 200 });
   } catch (error) {
-    console.error("GET /api/projects error:", error);
+    console.error("GET /api/teams error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch projects" },
+      { error: "Failed to fetch teams" },
       { status: 500 }
     );
   }
@@ -43,36 +45,35 @@ export async function POST(request: Request) {
 
     await connectDB();
     const body = await request.json();
-    const validated = createProjectSchema.parse(body);
+    const validated = createTeamSchema.parse(body);
 
-    const existingProject = await projects.findOne({ name: validated.name });
-    if (existingProject) {
+    const existingTeam = await teams.findOne({ name: validated.name });
+    if (existingTeam) {
       return NextResponse.json(
-        { error: "Project already exists" },
+        { error: "Team already exists" },
         { status: 400 }
       );
     }
 
-    const project = await projects.create({
+    const team = await teams.create({
       ...validated,
       createdBy: decoded.id,
-      members: [decoded.id],
     });
 
     await logActivity({
       userId: decoded.id,
       action: "create",
-      entityType: "project",
-      entityId: project._id.toString(),
-      message: `Created project ${validated.name}`,
+      entityType: "team",
+      entityId: team._id.toString(),
+      message: `Created team ${validated.name}`,
       metadata: { name: validated.name, description: validated.description },
     });
 
-    return NextResponse.json(project, { status: 201 });
+    return NextResponse.json(team, { status: 201 });
   } catch (error) {
-    console.error("POST /api/projects error:", error);
+    console.error("POST /api/teams error:", error);
     return NextResponse.json(
-      { error: "Failed to create project" },
+      { error: "Failed to create team" },
       { status: 500 }
     );
   }

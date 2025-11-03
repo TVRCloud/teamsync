@@ -22,7 +22,7 @@ import { createProjectSchema, TCreateProjectSchema } from "@/schemas/project";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
-import { useCreateProject } from "@/hooks/UseProject";
+import { useCreateProject } from "@/hooks/useProject";
 import { toast } from "sonner";
 
 const CreateProject = () => {

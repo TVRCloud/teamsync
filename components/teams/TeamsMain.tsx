@@ -1,5 +1,4 @@
 "use client";
-
 import { Search } from "lucide-react";
 import {
   Card,
@@ -9,10 +8,13 @@ import {
   CardTitle,
 } from "../ui/card";
 import { HeaderSection } from "../ui/header-section";
-import CreateProject from "./CreateProject";
+import AddTeam from "./AddTeam";
 import { AnimatePresence, motion } from "framer-motion";
 import { Input } from "../ui/input";
-import { Separator } from "../ui/separator";
+import { useEffect, useState } from "react";
+import { useInView } from "react-intersection-observer";
+import { useInfiniteTeams } from "@/hooks/useTeam";
+import { Skeleton } from "../ui/skeleton";
 import {
   Table,
   TableBody,
@@ -21,31 +23,13 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { useEffect, useState } from "react";
-import { useInView } from "react-intersection-observer";
-import { useInfiniteProjects } from "@/hooks/useProject";
-import { Skeleton } from "../ui/skeleton";
 
-type Project = {
-  _id: string;
-  name: string;
-  description?: string;
-  status?: string;
-  createdBy?: {
-    _id: string;
-    name: string;
-    email: string;
-    role: string;
-  };
-  createdAt: string;
-};
-
-const ProjectsMain = () => {
+const TeamsMain = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { ref, inView } = useInView();
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
-    useInfiniteProjects(searchTerm);
+    useInfiniteTeams(searchTerm);
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
@@ -53,14 +37,14 @@ const ProjectsMain = () => {
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const filteredProjects: Project[] = data?.pages.flat() || [];
+  const filteredTeams = data?.pages.flat() || [];
 
   return (
     <div className="flex flex-col gap-3">
       <HeaderSection
-        title="Projects"
-        subtitle="Manage all projects in your workspace"
-        actions={<CreateProject />}
+        title="Teams"
+        subtitle="Manage your teams and their members."
+        actions={<AddTeam />}
       />
 
       <motion.div
@@ -71,17 +55,18 @@ const ProjectsMain = () => {
         <Card>
           <CardHeader className="flex justify-between">
             <div>
-              <CardTitle>Project Directory</CardTitle>
+              <CardTitle>Teams Directory</CardTitle>
               <CardDescription>
-                Search for a project to get started
+                View all your teams and their members.
               </CardDescription>
             </div>
+
             <div className="flex flex-col gap-4 md:flex-row">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder="Search projects..."
+                  placeholder="Search Teams..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
@@ -89,7 +74,6 @@ const ProjectsMain = () => {
               </div>
             </div>
           </CardHeader>
-          <Separator />
 
           <CardContent className="space-y-4">
             <div className="rounded-md border">
@@ -97,9 +81,9 @@ const ProjectsMain = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Project Name</TableHead>
+                      <TableHead>Team Name</TableHead>
                       <TableHead>Description</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>Members</TableHead>
                       <TableHead>Created By</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -117,17 +101,22 @@ const ProjectsMain = () => {
                                 ))}
                             </TableRow>
                           ))
-                        : filteredProjects.map((project) => (
-                            <TableRow key={project._id}>
-                              <TableCell>{project.name}</TableCell>
-                              <TableCell>
-                                {project.description || "—"}
+                        : filteredTeams.map((team) => (
+                            <TableRow key={team._id}>
+                              <TableCell className="font-medium">
+                                {team.name || "-"}
                               </TableCell>
-                              <TableCell className="capitalize">
-                                {project.status || "—"}
+                              <TableCell className="truncate max-w-[250px]">
+                                {team.description || "-"}
                               </TableCell>
                               <TableCell>
-                                {project.createdBy?.name || "—"}
+                                {team.members?.length ?? 0}{" "}
+                                {team.members?.length === 1
+                                  ? "member"
+                                  : "members"}
+                              </TableCell>
+                              <TableCell>
+                                {team.createdBy?.name || "Unknown"}
                               </TableCell>
                             </TableRow>
                           ))}
@@ -142,7 +131,7 @@ const ProjectsMain = () => {
                     ? "Loading more..."
                     : hasNextPage
                     ? "Scroll to load more"
-                    : "No more projects"}
+                    : "No more teams"}
                 </span>
               </div>
             </div>
@@ -153,4 +142,4 @@ const ProjectsMain = () => {
   );
 };
 
-export default ProjectsMain;
+export default TeamsMain;
