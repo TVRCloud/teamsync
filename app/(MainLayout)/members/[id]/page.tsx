@@ -1,5 +1,11 @@
+import ViewMembersMain from "@/components/members/ViewMembersMain";
+
 const ViewMembers = () => {
-  return <div>ViewMembers</div>;
+  return (
+    <div>
+      <ViewMembersMain />
+    </div>
+  );
 };
 
 export default ViewMembers;
