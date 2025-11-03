@@ -35,18 +35,19 @@ export function StatsCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -4 }}
       transition={{ delay: 0.1 + index * 0.05 }}
     >
-      <Card className="p-3 md:p-4">
+      <Card className="p-3 md:p-4 h-full">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0 sm:pb-1 md:pb-2">
           <CardTitle className="text-sm md:text-base font-medium truncate w-[calc(100%-1.5rem)]">
             {title}
           </CardTitle>
           <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="h-full">
           <div className="text-lg md:text-2xl font-bold h-9 flex items-center">
             {isLoading ? (
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
