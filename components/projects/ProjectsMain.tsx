@@ -23,7 +23,7 @@ import {
 } from "../ui/table";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { useInfiniteProjects } from "@/hooks/UseProject";
+import { useInfiniteProjects } from "@/hooks/useProject";
 import { Skeleton } from "../ui/skeleton";
 
 type Project = {
@@ -137,11 +137,13 @@ const ProjectsMain = () => {
               </div>
 
               <div className="flex justify-center" ref={ref}>
-                {isFetchingNextPage && (
-                  <div className="py-4">
-                    <Skeleton className="h-4 w-[120px]" />
-                  </div>
-                )}
+                <span className="p-4 text-center text-muted-foreground text-xs">
+                  {isFetchingNextPage
+                    ? "Loading more..."
+                    : hasNextPage
+                    ? "Scroll to load more"
+                    : "No more projects"}
+                </span>
               </div>
             </div>
           </CardContent>
