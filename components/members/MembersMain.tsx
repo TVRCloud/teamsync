@@ -4,7 +4,6 @@ import { useInfiniteUsers } from "@/hooks/useUser";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import {
-  Download,
   Mail,
   Search,
   SlidersHorizontal,
@@ -82,18 +81,10 @@ const MembersMain = () => {
       >
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>User Directory</CardTitle>
-                <CardDescription>
-                  A list of all users in your organization
-                </CardDescription>
-              </div>
-              <Button variant="outline" size="sm">
-                <Download className="mr-2 h-4 w-4" />
-                Export
-              </Button>
-            </div>
+            <CardTitle>User Directory</CardTitle>
+            <CardDescription>
+              A list of all users in your organization
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Search and Filters */}
@@ -101,7 +92,7 @@ const MembersMain = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search users"
+                  placeholder="Search users..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
