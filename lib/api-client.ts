@@ -83,3 +83,33 @@ export const fetchProjects = async ({
   const res = await apiClient.get(`/api/projects?${params.toString()}`);
   return res.data;
 };
+
+// ---------------------------
+// -----------TEAMS------------
+// ---------------------------
+
+export const createTeam = async (data: {
+  name: string;
+  description?: string;
+  members?: string[];
+}) => {
+  const res = await apiClient.post(`/api/teams`, data);
+  return res.data;
+};
+
+export const fetchTeams = async ({
+  skip,
+  search,
+}: {
+  skip: number;
+  search: string;
+}) => {
+  const params = new URLSearchParams({
+    skip: String(skip),
+    limit: "20",
+    search,
+  });
+
+  const res = await apiClient.get(`/api/teams?${params.toString()}`);
+  return res.data;
+};
