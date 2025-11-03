@@ -1,0 +1,154 @@
+"use client";
+
+import { Search } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import { HeaderSection } from "../ui/header-section";
+import CreateProject from "./CreateProject";
+import { AnimatePresence, motion } from "framer-motion";
+import { Input } from "../ui/input";
+import { Separator } from "../ui/separator";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table";
+import { useEffect, useState } from "react";
+import { useInView } from "react-intersection-observer";
+import { useInfiniteProjects } from "@/hooks/UseProject";
+import { Skeleton } from "../ui/skeleton";
+
+type Project = {
+  _id: string;
+  name: string;
+  description?: string;
+  status?: string;
+  createdBy?: {
+    _id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+  createdAt: string;
+};
+
+const ProjectsMain = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const { ref, inView } = useInView();
+
+  const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
+    useInfiniteProjects(searchTerm);
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const filteredProjects: Project[] = data?.pages.flat() || [];
+
+  return (
+    <div className="flex flex-col gap-3">
+      <HeaderSection
+        title="Projects"
+        subtitle="Manage all projects in your workspace"
+        actions={<CreateProject />}
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <Card>
+          <CardHeader className="flex justify-between">
+            <div>
+              <CardTitle>Project Directory</CardTitle>
+              <CardDescription>
+                Search for a project to get started
+              </CardDescription>
+            </div>
+            <div className="flex flex-col gap-4 md:flex-row">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search projects..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+          </CardHeader>
+          <Separator />
+
+          <CardContent className="space-y-4">
+            <div className="rounded-md border">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Project Name</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Created By</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <AnimatePresence>
+                      {isLoading
+                        ? [...Array(5)].map((_, i) => (
+                            <TableRow key={i}>
+                              {Array(4)
+                                .fill(0)
+                                .map((_, j) => (
+                                  <TableCell key={j}>
+                                    <Skeleton className="h-4 w-[100px]" />
+                                  </TableCell>
+                                ))}
+                            </TableRow>
+                          ))
+                        : filteredProjects.map((project) => (
+                            <TableRow key={project._id}>
+                              <TableCell>{project.name}</TableCell>
+                              <TableCell>
+                                {project.description || "—"}
+                              </TableCell>
+                              <TableCell className="capitalize">
+                                {project.status || "—"}
+                              </TableCell>
+                              <TableCell>
+                                {project.createdBy?.name || "—"}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                    </AnimatePresence>
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="flex justify-center" ref={ref}>
+                {isFetchingNextPage && (
+                  <div className="py-4">
+                    <Skeleton className="h-4 w-[120px]" />
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
+  );
+};
+
+export default ProjectsMain;
