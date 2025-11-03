@@ -506,6 +506,58 @@ const DashboardMain = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>Common tasks and shortcuts</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              {
+                label: "Create Project",
+                icon: Briefcase,
+                color: "from-blue-500 to-blue-600",
+              },
+              {
+                label: "Add Team Member",
+                icon: Users,
+                color: "from-green-500 to-green-600",
+              },
+              {
+                label: "New Task",
+                icon: ListTodo,
+                color: "from-purple-500 to-purple-600",
+              },
+              {
+                label: "View Reports",
+                icon: BarChart3,
+                color: "from-orange-500 to-orange-600",
+              },
+            ].map((action, idx) => (
+              <motion.button
+                key={action.label}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ delay: idx * 0.05 }}
+                className="p-6 rounded-xl bg-card border hover:shadow-lg transition-shadow flex flex-col items-center gap-3 cursor-pointer"
+              >
+                <div
+                  className={`w-12 h-12 rounded-full bg-linear-to-br ${action.color} flex items-center justify-center`}
+                >
+                  <action.icon className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-sm font-medium text-center">
+                  {action.label}
+                </span>
+              </motion.button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
