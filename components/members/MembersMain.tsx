@@ -43,11 +43,13 @@ import {
 } from "../ui/dropdown-menu";
 import { DateTime } from "luxon";
 import AddMember from "./AddMember";
+import { useRouter } from "next/navigation";
 
 const MembersMain = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { ref, inView } = useInView();
   const [selected, setSelected] = useState<string[]>([]);
+  const router = useRouter();
 
   const toggleSelected = (id: string) => {
     setSelected((prev) =>
@@ -237,7 +239,11 @@ const MembersMain = () => {
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
-                                    <DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        router.push(`/members/${user._id}`);
+                                      }}
+                                    >
                                       <User className="mr-2 h-4 w-4" />
                                       View User
                                     </DropdownMenuItem>
