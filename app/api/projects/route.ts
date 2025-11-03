@@ -68,7 +68,6 @@ export async function POST(request: Request) {
       metadata: { name: validated.name, description: validated.description },
     });
 
-    console.log(body);
     return NextResponse.json(project, { status: 201 });
   } catch (error) {
     console.error("POST /api/projects error:", error);
