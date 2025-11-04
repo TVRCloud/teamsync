@@ -24,6 +24,7 @@ import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { toast } from "sonner";
 import { useCreateProject } from "@/hooks/useProjects";
+import AddProjectTeams from "./AddProjectTeams";
 
 const CreateProject = () => {
   const addProject = useCreateProject();
@@ -97,6 +98,8 @@ const CreateProject = () => {
                 </FormItem>
               )}
             />
+
+            <AddProjectTeams form={form} />
 
             <FormField
               control={form.control}
