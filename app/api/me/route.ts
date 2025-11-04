@@ -12,6 +12,15 @@ export async function GET() {
     await connectDB();
     const user = await users.findById(decoded.id).select("-password");
 
+    // const user = await users.aggregate([
+    //   {
+    //     $match: {
+    //       _id: mongoose.Types.ObjectId.createFromHexString(decoded.id),
+    //     },
+    //   },
+    //   { $project: { password: 0 } },
+    // ]);
+
     if (!user) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
