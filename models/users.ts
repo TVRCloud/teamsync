@@ -11,7 +11,6 @@ const UserSchema = new Schema(
       default: "member",
     },
     avatar: { type: String },
-    teams: [{ type: Schema.Types.ObjectId, ref: "Teams" }],
     isActive: { type: Boolean, default: true },
   },
   {
