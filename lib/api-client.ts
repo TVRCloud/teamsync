@@ -20,6 +20,11 @@ export const fetchUsers = async ({
   return res.data;
 };
 
+export const fetchSingleUser = async (id: string) => {
+  const res = await apiClient.get(`/api/users/${id}`);
+  return res.data;
+};
+
 export const createUser = async (data: {
   name: string;
   email: string;
