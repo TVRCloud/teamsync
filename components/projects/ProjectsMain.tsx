@@ -23,8 +23,8 @@ import {
 } from "../ui/table";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { useInfiniteProjects } from "@/hooks/useProject";
 import { Skeleton } from "../ui/skeleton";
+import { useInfiniteProjects } from "@/hooks/useProjects";
 
 type Project = {
   _id: string;

@@ -22,8 +22,8 @@ import { createProjectSchema, TCreateProjectSchema } from "@/schemas/project";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
-import { useCreateProject } from "@/hooks/useProject";
 import { toast } from "sonner";
+import { useCreateProject } from "@/hooks/useProjects";
 
 const CreateProject = () => {
   const addProject = useCreateProject();
