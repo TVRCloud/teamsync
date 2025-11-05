@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, ChevronDown } from "lucide-react";
+import { X, ChevronDown, Check } from "lucide-react";
 import {
   Command,
   CommandGroup,
@@ -28,6 +28,10 @@ interface MultiSelectProps {
   options: Option[];
   isLoading?: boolean;
   onSearchChange?: (value: string) => void;
+  // ✅ New Props for Customization
+  placeholder?: string;
+  searchPlaceholder?: string;
+  emptyText?: string;
 }
 
 const MultiSelect = ({
@@ -36,21 +40,23 @@ const MultiSelect = ({
   options,
   isLoading,
   onSearchChange,
+  placeholder = "Select items...",
+  searchPlaceholder = "Search...",
+  emptyText = "No results found.",
 }: MultiSelectProps) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // ✅ Debounce search to prevent UI lag / focus loss
+  // Debounce logic remains the same
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search.trim());
-    }, 400); // 400ms debounce for smoother typing
+    }, 400);
 
     return () => clearTimeout(handler);
   }, [search]);
 
-  // ✅ Trigger API search only after debounce
   useEffect(() => {
     if (onSearchChange) onSearchChange(debouncedSearch);
   }, [debouncedSearch]);
@@ -74,9 +80,7 @@ const MultiSelect = ({
             className="w-full justify-between"
             type="button"
           >
-            {value.length > 0
-              ? `${value.length} selected`
-              : "Select members..."}
+            {value.length > 0 ? `${value.length} selected` : placeholder}
             <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -84,13 +88,11 @@ const MultiSelect = ({
         <PopoverContent align="start" className="p-0 w-full">
           <Command shouldFilter={false}>
             <CommandInput
-              placeholder="Search users..."
+              placeholder={searchPlaceholder}
               value={search}
               onValueChange={setSearch}
             />
-            <CommandEmpty>
-              {isLoading ? "Loading..." : "No users found."}
-            </CommandEmpty>
+            <CommandEmpty>{isLoading ? "Loading..." : emptyText}</CommandEmpty>
             <CommandGroup>
               {options.map((opt) => (
                 <CommandItem
@@ -106,7 +108,7 @@ const MultiSelect = ({
                   >
                     {opt.label}
                     {value.includes(opt.value) && (
-                      <X className="h-4 w-4 opacity-50" />
+                      <Check className="h-4 w-4 opacity-50" />
                     )}
                   </div>
                 </CommandItem>
@@ -128,6 +130,7 @@ const MultiSelect = ({
                 type="button"
                 onClick={() => handleSelect(opt.value)}
                 className="text-muted-foreground hover:text-foreground"
+                aria-label={`Remove ${opt.label}`}
               >
                 <X className="w-3 h-3" />
               </button>

@@ -24,6 +24,7 @@ import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { toast } from "sonner";
 import { useCreateProject } from "@/hooks/useProjects";
+import AddProjectTeams from "./AddProjectTeams";
 
 const CreateProject = () => {
   const addProject = useCreateProject();
@@ -34,7 +35,7 @@ const CreateProject = () => {
     defaultValues: {
       name: "",
       description: "",
-      color: "#3b82f6",
+      teams: [],
     },
   });
 
@@ -98,19 +99,7 @@ const CreateProject = () => {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="color"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Color</FormLabel>
-                  <FormControl>
-                    <Input type="color" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <AddProjectTeams form={form} />
 
             <Button type="submit" className="w-full">
               Create

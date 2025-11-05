@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useCreateTeam } from "@/hooks/useTeam";
@@ -27,16 +26,11 @@ import {
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
-import { useInfiniteUsers } from "@/hooks/useUser";
-import MultiSelect from "../ui/multiselect";
+import AddMembers from "./AddMembers";
 
 const AddTeam = () => {
   const addTeams = useCreateTeam();
   const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const { data, isLoading } = useInfiniteUsers(searchQuery);
-  const filteredUsers = data?.pages.flat() || [];
 
   const form = useForm<TCreateTeamSchema>({
     resolver: zodResolver(createTeamSchema),
@@ -51,7 +45,6 @@ const AddTeam = () => {
     addTeams.mutate(data, {
       onSuccess: () => {
         form.reset();
-        setSearchQuery("");
         setOpen(false);
         toast.success("Team created successfully");
       },
@@ -117,30 +110,7 @@ const AddTeam = () => {
               )}
             />
 
-            {/* Members */}
-            <FormField
-              control={form.control}
-              name="members"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Members</FormLabel>
-                  <FormControl>
-                    <MultiSelect
-                      value={field.value as string[]}
-                      onChange={field.onChange}
-                      options={filteredUsers.map((user: any) => ({
-                        label: user.name,
-                        value: user._id,
-                      }))}
-                      isLoading={isLoading}
-                      onSearchChange={setSearchQuery}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+            <AddMembers form={form} />
             {/* Submit */}
             <Button
               type="submit"

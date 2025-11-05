@@ -9,10 +9,17 @@ const ProjectSchema = new Schema(
       enum: ["active", "completed", "archived"],
       default: "active",
     },
+    priority: {
+      type: String,
+      enum: ["low", "medium", "high", "urgent"],
+      default: "medium",
+    },
+    teams: [{ type: Schema.Types.ObjectId, ref: "Teams" }],
     createdBy: { type: Schema.Types.ObjectId, ref: "Users" },
-    // team: { type: Schema.Types.ObjectId, ref: "Teams" },
+    updatedBy: { type: Schema.Types.ObjectId, ref: "Users" },
     startDate: { type: Date },
     endDate: { type: Date },
+    color: { type: String, unique: true },
   },
   { timestamps: true }
 );

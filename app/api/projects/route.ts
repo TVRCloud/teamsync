@@ -5,6 +5,24 @@ import { createProjectSchema } from "@/schemas/project";
 import { logActivity } from "@/utils/logger";
 import { NextResponse } from "next/server";
 
+function getRandomColor() {
+  return `#${Math.floor(Math.random() * 0xffffff)
+    .toString(16)
+    .padStart(6, "0")}`;
+}
+
+async function generateUniqueColor() {
+  let color = getRandomColor();
+  let exists = await projects.exists({ color });
+
+  while (exists) {
+    color = getRandomColor();
+    exists = await projects.exists({ color });
+  }
+
+  return color;
+}
+
 export async function GET(request: Request) {
   try {
     const { errorResponse } = await authenticateUser(["admin"]);
@@ -19,12 +37,40 @@ export async function GET(request: Request) {
 
     const query = search ? { name: { $regex: search, $options: "i" } } : {};
 
-    const projectList = await projects
-      .find(query)
-      .populate("createdBy", "name email role")
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    const projectList = await projects.aggregate([
+      { $match: query },
+      {
+        $lookup: {
+          from: "users",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "createdBy",
+        },
+      },
+      {
+        $lookup: {
+          from: "teams",
+          localField: "teams",
+          foreignField: "_id",
+          as: "teams",
+        },
+      },
+      { $unwind: "$createdBy" },
+      {
+        $project: {
+          name: 1,
+          status: 1,
+          priority: 1,
+          createdAt: 1,
+          updatedAt: 1,
+
+          "createdBy.name": 1,
+          "teams.name": 1,
+        },
+      },
+      { $skip: skip },
+      { $limit: limit },
+    ]);
 
     return NextResponse.json(projectList, { status: 200 });
   } catch (error) {
@@ -53,10 +99,12 @@ export async function POST(request: Request) {
       );
     }
 
+    const color = await generateUniqueColor();
+
     const project = await projects.create({
       ...validated,
       createdBy: decoded.id,
-      members: [decoded.id],
+      color,
     });
 
     await logActivity({

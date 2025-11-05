@@ -7,11 +7,10 @@ const UserSchema = new Schema(
     password: { type: String, required: true },
     role: {
       type: String,
-      enum: ["admin", "manager", "member", "guest"],
+      enum: ["admin", "manager", "lead", "member", "guest"],
       default: "member",
     },
     avatar: { type: String },
-    teams: [{ type: Schema.Types.ObjectId, ref: "Teams" }],
     isActive: { type: Boolean, default: true },
   },
   {

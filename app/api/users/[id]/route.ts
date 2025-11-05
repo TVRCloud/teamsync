@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import users from "@/models/users";
 import { authenticateUser } from "@/lib/authenticateUser";
+import mongoose from "mongoose";
 
 export async function GET(
   request: NextRequest,
@@ -14,7 +15,23 @@ export async function GET(
     if (errorResponse) return errorResponse;
 
     await connectDB();
-    const user = await users.findById(id).select("-password");
+    // const user = await users.findById(id).select("-password");
+
+    const user = await users.aggregate([
+      {
+        $match: {
+          _id: mongoose.Types.ObjectId.createFromHexString(id),
+        },
+      },
+      {
+        $lookup: {
+          from: "teams",
+          localField: "_id",
+          foreignField: "members",
+          as: "teams",
+        },
+      },
+    ]);
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });

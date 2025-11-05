@@ -18,15 +18,57 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get("limit") || "10");
     const search = searchParams.get("search") || "";
 
-    const query = search ? { name: { $regex: search, $options: "i" } } : {};
+    // const query = search ? { name: { $regex: search, $options: "i" } } : {};
 
-    const teamList = await teams
-      .find(query)
-      .populate("createdBy", "name email role")
-      // .populate("members", "name email role")
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    // const teamList = await teams
+    //   .find(query)
+    //   .populate("createdBy", "name email role")
+    //   // .populate("members", "name email role")
+    //   .skip(skip)
+    //   .limit(limit)
+    //   .lean();
+
+    // 1. Define the $match stage for searching
+    const matchQuery = search
+      ? { name: { $regex: search, $options: "i" } }
+      : {};
+
+    const teamList = await teams.aggregate([
+      // 2. Filter teams based on the search query
+      { $match: matchQuery },
+
+      // 3. Populate 'createdBy' (equivalent to .populate("createdBy", "name email role"))
+      {
+        $lookup: {
+          from: "users",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "createdBy",
+        },
+      },
+      // $lookup always returns an array, and since 'createdBy' is a single reference,
+      // we use $unwind to convert the array into a single object and then $project to select fields.
+      { $unwind: "$createdBy" },
+
+      // 4. Exclude the password and select necessary fields from the joined 'createdBy'
+      // here 1 denote to select all fields and 0 to exclude
+      {
+        $project: {
+          name: 1,
+          description: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          members: 1,
+
+          "createdBy._id": 1,
+          "createdBy.name": 1,
+        },
+      },
+
+      // 5. Pagination
+      { $skip: skip },
+      { $limit: limit },
+    ]);
 
     return NextResponse.json(teamList, { status: 200 });
   } catch (error) {
