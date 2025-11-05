@@ -28,8 +28,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Card, CardContent } from "../ui/card";
-import { Tabs } from "../ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 const ViewMembersMain = () => {
   const params = useParams<{ id: string }>();
@@ -168,10 +174,12 @@ const ViewMembersMain = () => {
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between mb-3">
                     <stat.icon className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-3xl font-bold">{stat.value}</span>
+                    <span className="text-3xl font-bold">
+                      {stat.value ?? "-"}
+                    </span>
                   </div>
                   <p className="text-sm text-muted-foreground font-medium">
-                    {stat.label}
+                    {stat.label ?? "-"}
                   </p>
                 </CardContent>
               </Card>
@@ -180,8 +188,34 @@ const ViewMembersMain = () => {
         </div>
       </div>
 
-      <div className=" pb-12">
-        <Tabs defaultValue="overview" className="w-full"></Tabs>
+      <div className="pb-12">
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-5 mb-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="teams">Teams</TabsTrigger>
+            <TabsTrigger value="tasks">Tasks</TabsTrigger>
+            <TabsTrigger value="projects">Projects</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle>Profile Information</CardTitle>
+                  <CardDescription>Update user profile details</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-sm font-medium pt-2">{data.name}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
