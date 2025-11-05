@@ -29,15 +29,85 @@ export async function GET(
           localField: "_id",
           foreignField: "members",
           as: "teams",
+          pipeline: [
+            {
+              $lookup: {
+                from: "users",
+                localField: "members",
+                foreignField: "_id",
+                as: "members",
+              },
+            },
+            { $project: { _id: 1, name: 1, description: 1 } },
+          ],
         },
       },
+      {
+        $lookup: {
+          from: "projects",
+          localField: "teams._id",
+          foreignField: "teams",
+          as: "projects",
+          pipeline: [
+            {
+              $lookup: {
+                from: "teams",
+                localField: "teams",
+                foreignField: "_id",
+                as: "teams",
+                pipeline: [
+                  // {
+                  //   $lookup: {
+                  //     from: "users",
+                  //     localField: "members",
+                  //     foreignField: "_id",
+                  //     as: "members",
+                  //     pipeline: [
+                  //       {
+                  //         $project: { name: 1, email: 1, role: 1, isActive: 1 },
+                  //       },
+                  //     ],
+                  //   },
+                  // },
+
+                  { $project: { _id: 1, name: 1, description: 1 } },
+                ],
+              },
+            },
+            {
+              $lookup: {
+                from: "users",
+                localField: "createdBy",
+                foreignField: "_id",
+                as: "createdBy",
+                pipeline: [
+                  {
+                    $project: { name: 1, email: 1, role: 1, isActive: 1 },
+                  },
+                ],
+              },
+            },
+            { $unwind: "$createdBy" },
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+                description: 1,
+                teams: 1,
+                createdBy: 1,
+              },
+            },
+          ],
+        },
+      },
+      { $project: { password: 0 } },
     ]);
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(user, { status: 200 });
+    return NextResponse.json(user[0], { status: 200 });
   } catch (error) {
     console.error("GET /api/users/[id] error:", error);
     return NextResponse.json(
