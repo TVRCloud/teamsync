@@ -31,6 +31,9 @@ type Project = {
   name: string;
   description?: string;
   status?: string;
+  teams?: {
+    name: string;
+  }[];
   createdBy?: {
     _id: string;
     name: string;
@@ -98,8 +101,8 @@ const ProjectsMain = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Project Name</TableHead>
-                      <TableHead>Description</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Teams</TableHead>
                       <TableHead>Created By</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -120,11 +123,11 @@ const ProjectsMain = () => {
                         : filteredProjects.map((project) => (
                             <TableRow key={project._id}>
                               <TableCell>{project.name}</TableCell>
-                              <TableCell>
-                                {project.description || "—"}
-                              </TableCell>
                               <TableCell className="capitalize">
                                 {project.status || "—"}
+                              </TableCell>
+                              <TableCell>
+                                {project?.teams?.length || 0}
                               </TableCell>
                               <TableCell>
                                 {project.createdBy?.name || "—"}
