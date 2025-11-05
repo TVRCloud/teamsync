@@ -1,4 +1,9 @@
-import { createUser, fetchSingleUser, fetchUsers } from "@/lib/api-client";
+import {
+  createUser,
+  editProfile,
+  fetchSingleUser,
+  fetchUsers,
+} from "@/lib/api-client";
 import { useUserStore } from "@/store/useUserStore";
 import { apiClient } from "@/utils/axios";
 import {
@@ -11,7 +16,7 @@ import {
 export function useAuth() {
   const { user, setUser } = useUserStore();
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["me"],
     staleTime: Infinity,
     gcTime: Infinity,
@@ -23,7 +28,7 @@ export function useAuth() {
     },
   });
 
-  return { user: user ?? data, isLoading, isError, error };
+  return { user: user ?? data, isLoading, isError, error, refetch };
 }
 
 export const useInfiniteUsers = (search: string) => {
@@ -44,6 +49,17 @@ export const useViewUser = (id: string) => {
   return useQuery({
     queryKey: ["user", id],
     queryFn: () => fetchSingleUser(id),
+  });
+};
+
+export const useEditProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: editProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["me"] });
+    },
   });
 };
 
