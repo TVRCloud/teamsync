@@ -26,7 +26,7 @@ const AddProjectTeams = ({ form }: Props) => {
     <div>
       <FormField
         control={form.control}
-        name="team"
+        name="teams"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Teams</FormLabel>
@@ -40,6 +40,9 @@ const AddProjectTeams = ({ form }: Props) => {
                 }))}
                 isLoading={isLoading}
                 onSearchChange={setSearchQuery}
+                placeholder="Select teams..."
+                searchPlaceholder="Search teams..."
+                emptyText="No teams found."
               />
             </FormControl>
             <FormMessage />
