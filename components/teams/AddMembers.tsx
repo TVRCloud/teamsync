@@ -21,6 +21,7 @@ const AddMembers = ({ form }: Props) => {
 
   const { data, isLoading } = useInfiniteUsers(searchQuery);
   const filteredUsers = data?.pages.flat() || [];
+
   return (
     <>
       {/* Members */}
@@ -40,6 +41,9 @@ const AddMembers = ({ form }: Props) => {
                 }))}
                 isLoading={isLoading}
                 onSearchChange={setSearchQuery}
+                placeholder="Select members..."
+                searchPlaceholder="Search members..."
+                emptyText="No members found."
               />
             </FormControl>
             <FormMessage />
