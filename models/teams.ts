@@ -6,7 +6,6 @@ const TeamSchema = new Schema(
     description: { type: String },
     members: [{ type: Schema.Types.ObjectId, ref: "Users" }],
     createdBy: { type: Schema.Types.ObjectId, ref: "Users" },
-    projects: [{ type: Schema.Types.ObjectId, ref: "Projects" }],
   },
   { timestamps: true }
 );
