@@ -1,4 +1,5 @@
 import {
+  changePassword,
   createUser,
   editProfile,
   fetchSingleUser,
@@ -60,6 +61,12 @@ export const useEditProfile = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["me"] });
     },
+  });
+};
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: changePassword,
   });
 };
 
