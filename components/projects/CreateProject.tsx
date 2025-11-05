@@ -35,7 +35,7 @@ const CreateProject = () => {
     defaultValues: {
       name: "",
       description: "",
-      color: "#3b82f6",
+      teams: [],
     },
   });
 
@@ -100,20 +100,6 @@ const CreateProject = () => {
             />
 
             <AddProjectTeams form={form} />
-
-            <FormField
-              control={form.control}
-              name="color"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Color</FormLabel>
-                  <FormControl>
-                    <Input type="color" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <Button type="submit" className="w-full">
               Create
