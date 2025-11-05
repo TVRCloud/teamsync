@@ -8,3 +8,28 @@ export const createUserSchema = z.object({
 });
 
 export type TCreateUserSchema = z.infer<typeof createUserSchema>;
+
+export const updateUserSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters."),
+  email: z.string().email("Invalid email address."),
+  role: z.string().min(1, "Role is required."),
+});
+
+export type TUpdateUserSchema = z.infer<typeof updateUserSchema>;
+
+export const changePasswordSchema = z
+  .object({
+    oldPassword: z
+      .string()
+      .min(8, "Current password must be at least 8 characters."),
+    newPassword: z
+      .string()
+      .min(8, "New password must be at least 8 characters."),
+    confirmPassword: z.string().min(8, "Confirm password must match."),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "New passwords do not match.",
+    path: ["confirmPassword"],
+  });
+
+export type TChangePasswordSchema = z.infer<typeof changePasswordSchema>;

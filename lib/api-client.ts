@@ -25,6 +25,20 @@ export const fetchSingleUser = async (id: string) => {
   return res.data;
 };
 
+export const editProfile = async (data: { name: string; email: string }) => {
+  const res = await apiClient.patch(`/api/me`, data);
+  return res.data;
+};
+
+export const changePassword = async (data: {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}) => {
+  const res = await apiClient.patch(`/api/me/password`, data);
+  return res.data;
+};
+
 export const createUser = async (data: {
   name: string;
   email: string;

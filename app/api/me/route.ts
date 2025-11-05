@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import users from "@/models/users";
 import { authenticateUser } from "@/lib/authenticateUser";
+import { updateUserSchema } from "@/schemas/user";
 
 export async function GET() {
   try {
@@ -30,6 +31,41 @@ export async function GET() {
     console.error("GET /api/me error:", error);
     return NextResponse.json(
       { error: "Failed to fetch profile" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const { user: decoded, errorResponse } = await authenticateUser();
+    if (errorResponse) return errorResponse;
+
+    await connectDB();
+    const body = await request.json();
+    const validated = updateUserSchema.parse(body);
+
+    const allowedUpdates = {
+      name: validated.name,
+    };
+
+    const updatedUser = await users.findByIdAndUpdate(
+      decoded.id,
+      allowedUpdates,
+      {
+        new: true,
+      }
+    );
+
+    if (!updatedUser) {
+      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedUser, { status: 200 });
+  } catch (error) {
+    console.error("PATCH /api/me error:", error);
+    return NextResponse.json(
+      { error: "Failed to update profile" },
       { status: 500 }
     );
   }
