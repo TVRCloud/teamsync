@@ -66,7 +66,6 @@ export const fetchLogs = async ({
 export const createProject = async (data: {
   name: string;
   description?: string;
-  color: string;
 }) => {
   const res = await apiClient.post(`/api/projects`, data);
   return res.data;
