@@ -206,11 +206,7 @@ const ViewMembersMain = () => {
                   <CardDescription>Update user profile details</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <p className="text-sm font-medium pt-2">{data.name}</p>
-                    </div>
-                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
                 </CardContent>
               </Card>
             </div>
