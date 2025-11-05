@@ -8,7 +8,7 @@ import {
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Lock, Shield, X } from "lucide-react";
+import { ArrowRight, Loader2, Lock, Save, Shield, X } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -21,8 +21,11 @@ import { Input } from "../ui/input";
 import { useForm } from "react-hook-form";
 import { changePasswordSchema, TChangePasswordSchema } from "@/schemas/user";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useChangePassword } from "@/hooks/useUser";
+import { toast } from "sonner";
 
 const ChangePassword = () => {
+  const changePass = useChangePassword();
   const [isPasswordFormVisible, setIsPasswordFormVisible] = useState(false);
 
   const form = useForm<TChangePasswordSchema>({
@@ -31,6 +34,19 @@ const ChangePassword = () => {
 
   const handleRevealPasswordForm = () => {
     setIsPasswordFormVisible(true);
+  };
+
+  const onSubmit = (data: TChangePasswordSchema) => {
+    changePass.mutate(data, {
+      onSuccess: () => {
+        form.reset();
+        setIsPasswordFormVisible(false);
+        toast.success("Password changed successfully");
+      },
+      onError: () => {
+        toast.error("Something went wrong");
+      },
+    });
   };
 
   return (
@@ -72,7 +88,10 @@ const ChangePassword = () => {
                 className="overflow-hidden"
               >
                 <Form {...form}>
-                  <form className="space-y-6">
+                  <form
+                    className="space-y-6"
+                    onSubmit={form.handleSubmit(onSubmit)}
+                  >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <FormField
                         control={form.control}
@@ -143,22 +162,23 @@ const ChangePassword = () => {
 
                     <div className="flex justify-end gap-3">
                       <Button
-                        variant="outline"
+                        variant="destructive"
                         onClick={() => setIsPasswordFormVisible(false)}
                         type="button"
-                        // disabled={passwordLoading}
+                        disabled={changePass.isPending}
                       >
                         <X className="w-4 h-4 mr-2" />
                         Cancel
                       </Button>
-                      {/* <Button type="submit" disabled={passwordLoading}>
-                        {passwordLoading ? (
+
+                      <Button type="submit" disabled={changePass.isPending}>
+                        {changePass.isPending ? (
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         ) : (
                           <Save className="w-4 h-4 mr-2" />
                         )}
                         Save Password
-                      </Button> */}
+                      </Button>
                     </div>
                   </form>
                 </Form>
