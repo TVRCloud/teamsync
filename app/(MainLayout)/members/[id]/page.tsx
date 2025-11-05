@@ -1,10 +1,11 @@
+import LayoutWrap from "@/components/layout-wrap";
 import ViewMembersMain from "@/components/members/ViewMembersMain";
 
 const ViewMembers = () => {
   return (
-    <div>
+    <LayoutWrap>
       <ViewMembersMain />
-    </div>
+    </LayoutWrap>
   );
 };
 
