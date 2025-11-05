@@ -551,31 +551,23 @@ const ViewMembersMain = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <Card>
-                <CardHeader>
-                  <CardTitle>Projects</CardTitle>
-                  <CardDescription>
-                    {data.projects.length} projects this user is involved in.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {data.projects.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {data.projects.map((project: Project, index: number) => (
-                        <ProjectItem
-                          key={project._id}
-                          project={project}
-                          index={index}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground p-4 border rounded-md">
-                      This user is not currently assigned to any projects.
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+              <div>
+                {data.projects.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {data.projects.map((project: Project, index: number) => (
+                      <ProjectItem
+                        key={project._id}
+                        project={project}
+                        index={index}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground p-4 border rounded-md">
+                    This user is not currently assigned to any projects.
+                  </p>
+                )}
+              </div>
             </motion.div>
           </TabsContent>
 
@@ -585,28 +577,19 @@ const ViewMembersMain = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <Card>
-                <CardHeader>
-                  <CardTitle>Teams</CardTitle>
-                  <CardDescription>
-                    {data.teams.length} teams currently associated with this
-                    user.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {data.teams.length > 0 ? (
-                    <div className="space-y-4">
-                      {data.teams.map((team: Team, index: number) => (
-                        <TeamItem key={team._id} team={team} index={index} />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground p-4 border rounded-md">
-                      This user is not currently assigned to any teams.
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+              {data.teams.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-3">
+                    {data.teams.map((team: Team, index: number) => (
+                      <TeamItem key={team._id} team={team} index={index} />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-muted-foreground p-4 border rounded-md">
+                  This user is not currently assigned to any teams.
+                </p>
+              )}
             </motion.div>
           </TabsContent>
 
