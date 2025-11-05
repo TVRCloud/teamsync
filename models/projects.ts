@@ -14,11 +14,12 @@ const ProjectSchema = new Schema(
       enum: ["low", "medium", "high", "urgent"],
       default: "medium",
     },
+    teams: [{ type: Schema.Types.ObjectId, ref: "Teams" }],
     createdBy: { type: Schema.Types.ObjectId, ref: "Users" },
     updatedBy: { type: Schema.Types.ObjectId, ref: "Users" },
-    team: { type: Schema.Types.ObjectId, ref: "Teams" },
     startDate: { type: Date },
     endDate: { type: Date },
+    color: { type: String, unique: true },
   },
   { timestamps: true }
 );
