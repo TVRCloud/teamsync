@@ -24,6 +24,7 @@ export function useAuth() {
     staleTime: Infinity,
     gcTime: Infinity,
     enabled: !user,
+    retry: false,
     queryFn: async () => {
       const res = await apiClient.get("/api/me");
       setUser(res.data);
