@@ -1,20 +1,10 @@
-import Cookies from "js-cookie";
 import axios, { AxiosError, AxiosInstance } from "axios";
-import { config as sessionConfig } from "@/lib/config";
 
 const withAuth = (): AxiosInstance => {
   const instance = axios.create({
     baseURL: "",
-    timeout: 60000, // 60 seconds
-  });
-
-  instance.interceptors.request.use((config) => {
-    const token = Cookies.get(sessionConfig.session.cookieName);
-
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
+    timeout: 60000,
+    withCredentials: true,
   });
 
   instance.interceptors.response.use(
