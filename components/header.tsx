@@ -25,14 +25,20 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useUser";
 import { MobileMenu } from "./MobileMenu";
+import { useQueryClient } from "@tanstack/react-query";
+import { useUserStore } from "@/store/useUserStore";
 
 export function Header() {
   const { setTheme } = useTheme();
   const router = useRouter();
   const { user, isLoading } = useAuth();
+  const queryClient = useQueryClient();
+  const { clearUser } = useUserStore();
 
   const onLogout = async () => {
     await logoutAction();
+    clearUser();
+    queryClient.removeQueries();
     toast.success("Logged out successfully");
     router.push("/login");
   };
