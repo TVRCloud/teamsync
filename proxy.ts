@@ -34,8 +34,6 @@ export async function proxy(request: NextRequest) {
   if (isProtectedRoute && token) {
     const hasAccess = canAccessRoute({ path, role });
 
-    console.log("has access", hasAccess);
-
     if (!hasAccess) {
       return NextResponse.redirect(new URL("/forbidden", request.nextUrl));
     }
