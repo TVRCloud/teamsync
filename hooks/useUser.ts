@@ -32,6 +32,17 @@ export function useAuth() {
   return { user: user ?? data, isLoading, isError, error, refetch };
 }
 
+export const useEditProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: editProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["me"] });
+    },
+  });
+};
+
 export const useInfiniteUsers = (search: string) => {
   return useInfiniteQuery({
     queryKey: ["all-users", search],
@@ -50,17 +61,6 @@ export const useViewUser = (id: string) => {
   return useQuery({
     queryKey: ["user", id],
     queryFn: () => fetchSingleUser(id),
-  });
-};
-
-export const useEditProfile = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: editProfile,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["me"] });
-    },
   });
 };
 
