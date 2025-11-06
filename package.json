@@ -36,7 +36,6 @@
     "framer-motion": "^12.23.24",
     "immer": "^10.2.0",
     "jose": "^6.1.0",
-    "js-cookie": "^3.0.5",
     "lucide-react": "^0.548.0",
     "luxon": "^3.7.2",
     "mongoose": "^8.19.2",
