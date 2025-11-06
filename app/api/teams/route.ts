@@ -18,7 +18,8 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get("limit") || "10");
     const search = searchParams.get("search") || "";
 
-    // const query = search ? { name: { $regex: search, $options: "i" } } : {};
+    // 1. Filter teams based on the search query
+    const query = search ? { name: { $regex: search, $options: "i" } } : {};
 
     // const teamList = await teams
     //   .find(query)
@@ -28,14 +29,9 @@ export async function GET(request: Request) {
     //   .limit(limit)
     //   .lean();
 
-    // 1. Define the $match stage for searching
-    const matchQuery = search
-      ? { name: { $regex: search, $options: "i" } }
-      : {};
-
     const teamList = await teams.aggregate([
       // 2. Filter teams based on the search query
-      { $match: matchQuery },
+      { $match: query },
 
       // 3. Populate 'createdBy' (equivalent to .populate("createdBy", "name email role"))
       {
