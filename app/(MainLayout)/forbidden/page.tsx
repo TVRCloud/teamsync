@@ -1,0 +1,187 @@
+"use client";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Home, ShieldOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+export default function Forbidden() {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [glitchActive, setGlitchActive] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 20,
+        y: (e.clientY / window.innerHeight - 0.5) * 20,
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+
+    const glitchInterval = setInterval(() => {
+      setGlitchActive(true);
+      setTimeout(() => setGlitchActive(false), 200);
+    }, 3000);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      clearInterval(glitchInterval);
+    };
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-background text-foreground overflow-hidden relative">
+      {/* Animated Background - RETAINED ORIGINAL COLORS (primary/secondary/72, 184, 74) */}
+      <div className="fixed inset-0 pointer-events-none">
+        <motion.div
+          className="absolute inset-0 opacity-20"
+          style={{
+            background: `radial-gradient(600px circle at ${
+              50 + mousePosition.x
+            }% ${
+              50 + mousePosition.y
+            }%, rgba(114, 184, 74, 0.15), transparent 40%)`, // Original Color
+          }}
+        />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-secondary/5" />
+
+        {/* Grid Pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, currentColor 1px, transparent 1px),
+              linear-gradient(to bottom, currentColor 1px, transparent 1px)
+            `,
+            backgroundSize: "50px 50px",
+          }}
+        />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6">
+        {/* 401 Number with Glitch Effect */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="relative mb-8"
+        >
+          <motion.div
+            animate={{
+              rotateY: [0, 10, -10, 0],
+              rotateX: [0, -10, 10, 0],
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            style={{
+              transformStyle: "preserve-3d",
+              perspective: "1000px",
+            }}
+          >
+            <h1
+              className={`text-[12rem] md:text-[16rem] font-black leading-none relative ${
+                glitchActive ? "glitch" : ""
+              }`}
+            >
+              {/* Changed number to 401, RETAINED ORIGINAL GRADIENT CLASSES */}
+              <span className="bg-linear-to-br from-primary via-secondary to-primary bg-clip-text text-transparent">
+                401
+              </span>
+              {glitchActive && (
+                <>
+                  <span className="absolute inset-0 bg-linear-to-br from-primary to-secondary bg-clip-text text-transparent opacity-70 glitch-layer-1">
+                    401
+                  </span>
+                  <span className="absolute inset-0 bg-linear-to-br from-secondary to-primary bg-clip-text text-transparent opacity-70 glitch-layer-2">
+                    401
+                  </span>
+                </>
+              )}
+            </h1>
+          </motion.div>
+        </motion.div>
+
+        {/* Text Content - UPDATED FOR UNAUTHORIZED */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="text-center max-w-2xl mb-12"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Access Restricted
+          </h2>
+          <p className="text-lg md:text-xl text-muted-foreground mb-2">
+            You do not have permission to view the resource at this address.
+          </p>
+          <p className="text-muted-foreground">
+            Please verify your credentials or check with the site administrator.
+          </p>
+        </motion.div>
+
+        {/* Action Buttons - RETAINED ORIGINAL BUTTON STYLING */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="flex flex-col sm:flex-row gap-4 items-center"
+        >
+          <motion.button
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-8 py-4 rounded-xl bg-primary text-primary-foreground font-semibold text-lg flex items-center gap-2 hover:shadow-2xl hover:shadow-primary/30 transition-all group"
+            onClick={() => router.back()}
+          >
+            <ShieldOff className="w-5 h-5" />
+            Go Back
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-8 py-4 rounded-xl bg-gray-700 text-white font-semibold text-lg flex items-center gap-2 hover:shadow-2xl hover:shadow-gray-700/30 transition-all group"
+            onClick={() => router.push("/")}
+          >
+            <Home className="w-5 h-5" />
+            Return Home
+          </motion.button>
+        </motion.div>
+      </div>
+
+      {/* Styles - RETAINED ORIGINAL CSS BLOCK */}
+      <style jsx>{`
+        @keyframes glitch {
+          0%,
+          100% {
+            transform: translate(0);
+          }
+          33% {
+            transform: translate(-2px, 2px);
+          }
+          66% {
+            transform: translate(2px, -2px);
+          }
+        }
+
+        .glitch {
+          animation: glitch 0.3s infinite;
+        }
+
+        .glitch-layer-1 {
+          animation: glitch 0.3s infinite;
+          animation-delay: 0.05s;
+          left: 2px;
+        }
+
+        .glitch-layer-2 {
+          animation: glitch 0.3s infinite;
+          animation-delay: 0.1s;
+          left: -2px;
+        }
+      `}</style>
+    </div>
+  );
+}
