@@ -10,7 +10,7 @@ import mongoose from "mongoose";
 
 export async function GET(request: Request) {
   try {
-    const { user: decoded, errorResponse } = await authenticateUser([
+    const { user, errorResponse } = await authenticateUser([
       "admin",
       "manager",
       "lead",
@@ -32,11 +32,11 @@ export async function GET(request: Request) {
 
     // Convert decoded.id to ObjectId safely
     const userObjectId =
-      decoded.role !== "admin" && decoded.id
-        ? mongoose.Types.ObjectId.createFromHexString(decoded.id)
+      user.role !== "admin" && user.id
+        ? mongoose.Types.ObjectId.createFromHexString(user.id)
         : null;
 
-    if (decoded.role !== "admin" && userObjectId) {
+    if (user.role !== "admin" && userObjectId) {
       baseQuery.$or = [
         { createdBy: userObjectId },
         { members: { $in: [userObjectId] } },
