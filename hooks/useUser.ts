@@ -21,8 +21,6 @@ export function useAuth() {
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["me"],
-    staleTime: Infinity,
-    gcTime: Infinity,
     enabled: !user,
     retry: false,
     queryFn: async () => {
