@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { authenticateUser } from "@/lib/authenticateUser";
 import connectDB from "@/lib/mongodb";
 import "@/models/users";
@@ -5,10 +6,16 @@ import teams from "@/models/teams";
 import { createTeamSchema } from "@/schemas/teams";
 import { logActivity } from "@/utils/logger";
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
 
 export async function GET(request: Request) {
   try {
-    const { errorResponse } = await authenticateUser(["admin"]);
+    const { user: decoded, errorResponse } = await authenticateUser([
+      "admin",
+      "manager",
+      "lead",
+      "member",
+    ]);
     if (errorResponse) return errorResponse;
 
     await connectDB();
@@ -19,7 +26,22 @@ export async function GET(request: Request) {
     const search = searchParams.get("search") || "";
 
     // 1. Filter teams based on the search query
-    const query = search ? { name: { $regex: search, $options: "i" } } : {};
+    const baseQuery: any = search
+      ? { name: { $regex: search, $options: "i" } }
+      : {};
+
+    // Convert decoded.id to ObjectId safely
+    const userObjectId =
+      decoded.role !== "admin" && decoded.id
+        ? mongoose.Types.ObjectId.createFromHexString(decoded.id)
+        : null;
+
+    if (decoded.role !== "admin" && userObjectId) {
+      baseQuery.$or = [
+        { createdBy: userObjectId },
+        { members: { $in: [userObjectId] } },
+      ];
+    }
 
     // const teamList = await teams
     //   .find(query)
@@ -31,7 +53,7 @@ export async function GET(request: Request) {
 
     const teamList = await teams.aggregate([
       // 2. Filter teams based on the search query
-      { $match: query },
+      { $match: baseQuery },
 
       // 3. Populate 'createdBy' (equivalent to .populate("createdBy", "name email role"))
       {
@@ -78,7 +100,10 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { user: decoded, errorResponse } = await authenticateUser(["admin"]);
+    const { user: decoded, errorResponse } = await authenticateUser([
+      "admin",
+      "manager",
+    ]);
     if (errorResponse) return errorResponse;
 
     await connectDB();
