@@ -1,5 +1,5 @@
 "use client";
-import { Search } from "lucide-react";
+import { Link, Search } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -23,10 +23,13 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
 
 const TeamsMain = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { ref, inView } = useInView();
+  const router = useRouter();
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
     useInfiniteTeams(searchTerm);
@@ -85,6 +88,7 @@ const TeamsMain = () => {
                       <TableHead>Description</TableHead>
                       <TableHead>Members</TableHead>
                       <TableHead>Created By</TableHead>
+                      <TableHead></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -92,7 +96,7 @@ const TeamsMain = () => {
                       {isLoading
                         ? [...Array(5)].map((_, i) => (
                             <TableRow key={i}>
-                              {Array(4)
+                              {Array(5)
                                 .fill(0)
                                 .map((_, j) => (
                                   <TableCell key={j}>
@@ -117,6 +121,19 @@ const TeamsMain = () => {
                               </TableCell>
                               <TableCell>
                                 {team.createdBy?.name || "Unknown"}
+                              </TableCell>
+
+                              <TableCell className="max-w-[70px]">
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  onClick={() => {
+                                    router.push(`/teams/${team._id}`);
+                                  }}
+                                >
+                                  View Team
+                                  <Link className="w-3 h-3 ml-1" />
+                                </Button>
                               </TableCell>
                             </TableRow>
                           ))}

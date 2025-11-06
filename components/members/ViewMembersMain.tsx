@@ -2,87 +2,21 @@
 
 import { useViewUser } from "@/hooks/useUser";
 import { useParams } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import {
   Briefcase,
   CheckCircle,
   CheckSquare,
-  Edit2,
   ListTodo,
-  MoreVertical,
-  Save,
-  Settings,
-  Trash2,
   Users,
-  X,
-  Mail,
-  User,
-  Loader2,
-  Calendar,
   Link,
 } from "lucide-react";
 import { Badge } from "../ui/badge";
-import { useState } from "react";
 import { Button } from "../ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Input } from "../ui/input";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "../ui/form";
-import { toast } from "sonner";
-
-const UpdateUserSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
-  email: z.string().email("Invalid email address."),
-  role: z.string().min(1, "Role is required."),
-});
-
-type UpdateUserFormValues = z.infer<typeof UpdateUserSchema>;
-
-const updateUserAction = async (values: UpdateUserFormValues) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      if (values.name.toLowerCase().includes("fail")) {
-        resolve({
-          success: false,
-          message: "User update failed due to input.",
-        });
-      } else {
-        console.log("--- User Update Form Submission ---");
-        console.log("Submitted Values:", values);
-        console.log("-----------------------------------");
-        resolve({
-          success: true,
-          message: "User profile updated successfully!",
-        });
-      }
-    }, 1500);
-  });
-};
+import ProfileInformation from "./ProfileInfo";
 
 interface Team {
   _id: string;
@@ -102,7 +36,9 @@ const TeamItem = ({ team, index }: { team: Team; index: number }) => (
         <Users className="w-4 h-4 text-primary" />
         {team.name}
       </h4>
-      <Badge variant="secondary">Team ID: {team._id.slice(-4)}</Badge>
+      <Badge variant="secondary" className="text-xs">
+        Team ID: {team._id.slice(-4)}
+      </Badge>
     </div>
     <p className="text-sm text-muted-foreground mt-1">
       {team.description || "No description provided."}
@@ -139,7 +75,9 @@ const ProjectItem = ({
         <Briefcase className="w-4 h-4 text-primary" />
         {project.name}
       </h4>
-      <Badge variant="outline">ID: {project._id.slice(-4)}</Badge>
+      <Badge variant="outline" className="text-xs">
+        ID: {project._id.slice(-4)}
+      </Badge>
     </div>
     <p className="text-sm text-muted-foreground mt-2">
       {project.description || "No description available."}
@@ -159,63 +97,6 @@ const ProjectItem = ({
 const ViewMembersMain = () => {
   const params = useParams<{ id: string }>();
   const { data, isLoading } = useViewUser(params.id);
-  const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const form = useForm<UpdateUserFormValues>({
-    resolver: zodResolver(UpdateUserSchema),
-    defaultValues: {
-      name: data?.name || "",
-      email: data?.email || "",
-      role: data?.role || "",
-    },
-    values: {
-      name: data?.name || "",
-      email: data?.email || "",
-      role: data?.role || "",
-    },
-  });
-
-  const handleEdit = () => {
-    setIsEditing(true);
-    form.reset({
-      name: data.name,
-      email: data.email,
-      role: data.role,
-    });
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    form.reset({
-      name: data.name,
-      email: data.email,
-      role: data.role,
-    });
-  };
-
-  const onSubmit = async (values: UpdateUserFormValues) => {
-    setLoading(true);
-
-    try {
-      const res = (await updateUserAction(values)) as {
-        success: boolean;
-        message: string;
-      };
-
-      if (!res.success) {
-        toast.error(res.message);
-      } else {
-        toast.success(res.message);
-        setIsEditing(false);
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("An unexpected error occurred during update.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (isLoading) return <div>Loading...</div>;
   if (!data) return <div>User not found.</div>;
@@ -226,18 +107,18 @@ const ViewMembersMain = () => {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="border-b pb-8"
+        className="border-b pb-8 px-4 sm:px-6"
       >
-        <div className="flex items-start justify-between">
-          <div className="flex items-start gap-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="flex items-start gap-4 sm:gap-6">
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               className="relative"
             >
-              <Avatar className="w-24 h-24 border-4 border-background shadow-lg">
+              <Avatar className="w-20 h-20 sm:w-24 sm:h-24 border-4 border-background shadow-lg">
                 <AvatarImage src={data.avatar || ""} />
-                <AvatarFallback className="text-2xl font-bold bg-linear-to-br from-primary to-secondary text-primary-foreground">
+                <AvatarFallback className="text-xl sm:text-2xl font-bold bg-linear-to-br from-primary to-secondary text-primary-foreground">
                   {data.name
                     .split(" ")
                     .map((n: string) => n[0])
@@ -246,7 +127,7 @@ const ViewMembersMain = () => {
                 </AvatarFallback>
               </Avatar>
               {data.isActive && (
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-full border-4 border-background flex items-center justify-center">
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-primary rounded-full border-4 border-background flex items-center justify-center">
                   <CheckCircle className="w-3 h-3 text-primary-foreground" />
                 </div>
               )}
@@ -257,11 +138,12 @@ const ViewMembersMain = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <h1 className="text-4xl font-bold text-foreground mb-2">
+              <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-1 sm:mb-2">
                 {data.name}
               </h1>
-              <p className="text-muted-foreground mb-3">{data.email}</p>
-
+              <p className="text-sm sm:text-base text-muted-foreground mb-2 sm:mb-3">
+                {data.email}
+              </p>
               <div className="flex items-center gap-2">
                 <Badge variant="default" className="capitalize">
                   {data.role}
@@ -272,78 +154,11 @@ const ViewMembersMain = () => {
               </div>
             </motion.div>
           </div>
-
-          <div className="flex items-center gap-2">
-            <AnimatePresence mode="wait">
-              {!isEditing ? (
-                <motion.div
-                  key="edit"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="flex gap-2"
-                >
-                  <Button onClick={handleEdit}>
-                    <Edit2 className="w-4 h-4 mr-2" />
-                    Edit
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="icon">
-                        <MoreVertical className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>
-                        <Settings className="w-4 h-4 mr-2" />
-                        Settings
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete User
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="actions"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="flex gap-2"
-                >
-                  <Button
-                    variant="outline"
-                    onClick={handleCancel}
-                    disabled={loading}
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Cancel
-                  </Button>
-                  <Button
-                    form="update-user-form"
-                    type="submit"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Save className="w-4 h-4 mr-2" />
-                    )}
-                    Save
-                  </Button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
         </div>
       </motion.div>
 
-      <div className="px-6 -mt-8 mb-2">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="px-4 sm:px-6 -mt-8 mb-2">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: "Teams", value: data.teams.length, icon: Users },
             { label: "Projects", value: data.projects.length, icon: Briefcase },
@@ -360,11 +175,11 @@ const ViewMembersMain = () => {
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between mb-3">
                     <stat.icon className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-3xl font-bold">
+                    <span className="text-2xl sm:text-3xl font-bold">
                       {stat.value ?? "-"}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground font-medium">
+                  <p className="text-xs sm:text-sm text-muted-foreground font-medium">
                     {stat.label ?? "-"}
                   </p>
                 </CardContent>
@@ -374,175 +189,49 @@ const ViewMembersMain = () => {
         </div>
       </div>
 
-      <div className="pb-12">
+      <div className="pb-12 px-4 sm:px-6">
         <Tabs defaultValue="overview" className="w-full">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <TabsList className="grid w-full grid-cols-5 mb-4">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="projects">
+            <TabsList className="flex flex-wrap justify-start gap-1 p-1 mb-4 h-auto border rounded-lg bg-muted/50">
+              <TabsTrigger
+                value="overview"
+                className="flex-1 min-w-[100px] text-sm md:flex-auto"
+              >
+                Overview
+              </TabsTrigger>
+              <TabsTrigger
+                value="projects"
+                className="flex-1 min-w-[100px] text-sm md:flex-auto"
+              >
                 Projects ({data.projects.length})
               </TabsTrigger>
-              <TabsTrigger value="teams">
+              <TabsTrigger
+                value="teams"
+                className="flex-1 min-w-[100px] text-sm md:flex-auto"
+              >
                 Teams ({data.teams.length})
               </TabsTrigger>
-              <TabsTrigger value="tasks">Tasks</TabsTrigger>
-              <TabsTrigger value="activity">Activity</TabsTrigger>
+              <TabsTrigger
+                value="tasks"
+                className="flex-1 min-w-[100px] text-sm md:flex-auto"
+              >
+                Tasks
+              </TabsTrigger>
+              <TabsTrigger
+                value="activity"
+                className="flex-1 min-w-[100px] text-sm md:flex-auto"
+              >
+                Activity
+              </TabsTrigger>
             </TabsList>
           </motion.div>
 
           <TabsContent value="overview" className="space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-            >
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>Profile Information</CardTitle>
-                  <CardDescription>
-                    {isEditing
-                      ? "Edit user profile details"
-                      : "View user profile details"}
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="space-y-6">
-                  <Form {...form}>
-                    <form
-                      id="update-user-form"
-                      onSubmit={form.handleSubmit(onSubmit)}
-                      className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                    >
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Full Name</FormLabel>
-                            <FormControl>
-                              <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.3 }}
-                                className="relative"
-                              >
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                <Input
-                                  {...field}
-                                  disabled={!isEditing}
-                                  placeholder="User Name"
-                                  className="pl-10"
-                                />
-                              </motion.div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email Address</FormLabel>
-                            <FormControl>
-                              <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.3, delay: 0.1 }}
-                                className="relative"
-                              >
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                <Input
-                                  {...field}
-                                  type="email"
-                                  disabled={!isEditing}
-                                  placeholder="user@email.com"
-                                  className="pl-10"
-                                />
-                              </motion.div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="role"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Role</FormLabel>
-                            <FormControl>
-                              <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.3, delay: 0.2 }}
-                                className="relative"
-                              >
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                                  #
-                                </span>
-                                <Input
-                                  {...field}
-                                  disabled={!isEditing}
-                                  placeholder="user role"
-                                  className="pl-10 capitalize"
-                                />
-                              </motion.div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <button type="submit" className="hidden" />
-                    </form>
-                  </Form>
-                </CardContent>
-              </Card>
-
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.7 }}
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Details</CardTitle>
-                    <CardDescription>
-                      Important dates and status
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="text-sm space-y-3 pt-6">
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium text-muted-foreground">
-                        User ID:
-                      </p>
-                      <p className="font-mono text-xs">{data._id.slice(-8)}</p>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium text-muted-foreground flex items-center gap-1">
-                        <Calendar className="w-3 h-3" /> Created:
-                      </p>
-                      <p>{new Date(data.createdAt).toLocaleDateString()}</p>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium text-muted-foreground flex items-center gap-1">
-                        <Calendar className="w-3 h-3" /> Updated:
-                      </p>
-                      <p>{new Date(data.updatedAt).toLocaleDateString()}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </motion.div>
+            <ProfileInformation data={data} />
           </TabsContent>
 
           <TabsContent value="projects">
@@ -579,7 +268,7 @@ const ViewMembersMain = () => {
             >
               {data.teams.length > 0 ? (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {data.teams.map((team: Team, index: number) => (
                       <TeamItem key={team._id} team={team} index={index} />
                     ))}

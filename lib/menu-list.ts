@@ -67,10 +67,11 @@ export function getMenuList(pathname: string): Group[] {
           icon: ClipboardList,
         },
         {
-          href: "/projects",
+          href: "",
           label: "Projects",
           icon: FolderKanban,
           submenus: [
+            { href: "/projects", label: "All Projects" },
             { href: "/projects/active", label: "Active Projects" },
             { href: "/projects/completed", label: "Completed Projects" },
           ],

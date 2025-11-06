@@ -2,9 +2,11 @@ import {
   changePassword,
   createUser,
   editProfile,
+  editUser,
   fetchSingleUser,
   fetchUsers,
 } from "@/lib/api-client";
+import { TUpdateUserSchema } from "@/schemas/user";
 import { useUserStore } from "@/store/useUserStore";
 import { apiClient } from "@/utils/axios";
 import {
@@ -22,6 +24,7 @@ export function useAuth() {
     staleTime: Infinity,
     gcTime: Infinity,
     enabled: !user,
+    retry: false,
     queryFn: async () => {
       const res = await apiClient.get("/api/me");
       setUser(res.data);
@@ -31,6 +34,23 @@ export function useAuth() {
 
   return { user: user ?? data, isLoading, isError, error, refetch };
 }
+
+export const useEditProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: editProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["me"] });
+    },
+  });
+};
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: changePassword,
+  });
+};
 
 export const useInfiniteUsers = (search: string) => {
   return useInfiniteQuery({
@@ -53,23 +73,6 @@ export const useViewUser = (id: string) => {
   });
 };
 
-export const useEditProfile = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: editProfile,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["me"] });
-    },
-  });
-};
-
-export const useChangePassword = () => {
-  return useMutation({
-    mutationFn: changePassword,
-  });
-};
-
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
 
@@ -77,6 +80,17 @@ export const useCreateUser = () => {
     mutationFn: createUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["all-users"] });
+    },
+  });
+};
+
+export const useEditUser = (id: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (updatedData: TUpdateUserSchema) => editUser(id, updatedData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user", id] });
     },
   });
 };

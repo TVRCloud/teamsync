@@ -12,7 +12,7 @@ import { logActivity } from "@/utils/logger";
 
 export async function registerAction(formData: FormData) {
   const name = formData.get("name") as string;
-  const email = formData.get("email") as string;
+  const email = (formData.get("email") as string)?.toLowerCase();
   const password = formData.get("password") as string;
 
   if (!name || !email || !password) {
@@ -48,7 +48,7 @@ export async function registerAction(formData: FormData) {
 }
 
 export async function loginAction(formData: FormData) {
-  const email = formData.get("email") as string;
+  const email = (formData.get("email") as string)?.toLowerCase();
   const password = formData.get("password") as string;
 
   if (!email || !password) {

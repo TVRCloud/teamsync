@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { authenticateUser } from "@/lib/authenticateUser";
 import connectDB from "@/lib/mongodb";
 import "@/models/users";
@@ -5,10 +6,16 @@ import teams from "@/models/teams";
 import { createTeamSchema } from "@/schemas/teams";
 import { logActivity } from "@/utils/logger";
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
 
 export async function GET(request: Request) {
   try {
-    const { errorResponse } = await authenticateUser(["admin"]);
+    const { user, errorResponse } = await authenticateUser([
+      "admin",
+      "manager",
+      "lead",
+      "member",
+    ]);
     if (errorResponse) return errorResponse;
 
     await connectDB();
@@ -18,7 +25,23 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get("limit") || "10");
     const search = searchParams.get("search") || "";
 
-    // const query = search ? { name: { $regex: search, $options: "i" } } : {};
+    // 1. Filter teams based on the search query
+    const baseQuery: any = search
+      ? { name: { $regex: search, $options: "i" } }
+      : {};
+
+    // Convert decoded.id to ObjectId safely
+    const userObjectId =
+      user.role !== "admin" && user.id
+        ? mongoose.Types.ObjectId.createFromHexString(user.id)
+        : null;
+
+    if (user.role !== "admin" && userObjectId) {
+      baseQuery.$or = [
+        { createdBy: userObjectId },
+        { members: { $in: [userObjectId] } },
+      ];
+    }
 
     // const teamList = await teams
     //   .find(query)
@@ -28,14 +51,9 @@ export async function GET(request: Request) {
     //   .limit(limit)
     //   .lean();
 
-    // 1. Define the $match stage for searching
-    const matchQuery = search
-      ? { name: { $regex: search, $options: "i" } }
-      : {};
-
     const teamList = await teams.aggregate([
       // 2. Filter teams based on the search query
-      { $match: matchQuery },
+      { $match: baseQuery },
 
       // 3. Populate 'createdBy' (equivalent to .populate("createdBy", "name email role"))
       {
@@ -82,7 +100,10 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { user: decoded, errorResponse } = await authenticateUser(["admin"]);
+    const { user: decoded, errorResponse } = await authenticateUser([
+      "admin",
+      "manager",
+    ]);
     if (errorResponse) return errorResponse;
 
     await connectDB();

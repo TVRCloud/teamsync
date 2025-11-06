@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   motion,
   useScroll,
@@ -15,14 +15,30 @@ import {
   Menu,
   X,
   Sparkles,
+  Loader2,
+  LogOut,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useUser";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { logoutAction } from "../(auth)/actions/auth";
+import { toast } from "sonner";
 
 export default function LandingPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const { scrollYProgress } = useScroll();
   const router = useRouter();
+  const { user, isLoading } = useAuth();
 
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
@@ -61,6 +77,12 @@ export default function LandingPage() {
         "Real-time insights and analytics help you identify bottlenecks and improve productivity across teams.",
     },
   ];
+
+  const onLogout = async () => {
+    await logoutAction();
+    toast.success("Logged out successfully");
+    router.push("/login");
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -113,16 +135,60 @@ export default function LandingPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="hidden md:block px-6 py-2 rounded-lg bg-primary text-primary-foreground font-medium hover:shadow-lg hover:shadow-primary/20 transition-all"
-              onClick={() => {
-                router.push("/register");
-              }}
-            >
-              Try for Free
-            </motion.button>
+            {isLoading ? (
+              <div className="flex items-center justify-center h-8 w-8">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            ) : !user ? (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className=" px-6 py-2 rounded-lg bg-primary text-primary-foreground font-medium hover:shadow-lg hover:shadow-primary/20 transition-all"
+                onClick={() => {
+                  router.push("/register");
+                }}
+              >
+                Try for Free
+              </motion.button>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.image || ""} alt={user?.name} />
+                      <AvatarFallback>
+                        {user?.name ? user.name.charAt(0).toUpperCase() : "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {user?.name || "Unknown"}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground truncate">
+                        {user?.email || ""}
+                      </p>
+                      {user?.role && (
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                          {user.role}
+                        </span>
+                      )}
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onLogout} variant="destructive">
+                    <LogOut />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
 
             <button
               className="md:hidden"
