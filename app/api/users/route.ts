@@ -8,7 +8,7 @@ import { authenticateUser } from "@/lib/authenticateUser";
 
 export async function GET(request: Request) {
   try {
-    const { errorResponse } = await authenticateUser(["admin"]);
+    const { errorResponse } = await authenticateUser(["admin", "manager"]);
     if (errorResponse) return errorResponse;
 
     await connectDB();
@@ -43,7 +43,10 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { user: decoded, errorResponse } = await authenticateUser(["admin"]);
+    const { user: decoded, errorResponse } = await authenticateUser([
+      "admin",
+      "manager",
+    ]);
     if (errorResponse) return errorResponse;
 
     await connectDB();
