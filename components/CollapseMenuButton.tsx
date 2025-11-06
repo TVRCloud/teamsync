@@ -4,7 +4,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ChevronDown, Dot } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +26,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { usePathname } from "next/navigation";
-import { InsideMenu } from "@/lib/menu-list";
+import { InsideMenu } from "@/hooks/use-menu";
 
 interface CollapseMenuButtonProps {
   icon: any;
