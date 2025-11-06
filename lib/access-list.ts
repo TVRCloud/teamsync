@@ -4,6 +4,9 @@ export type AccessControlRule = {
 
 export const routeAccessMap: Record<string, AccessControlRule> = {
   "/dashboard": {
-    roles: ["admin", "manager", "member"],
+    roles: ["admin", "manager", "lead", "member"],
+  },
+  "/projects": {
+    roles: ["admin", "manager"],
   },
 };
