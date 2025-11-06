@@ -2,9 +2,11 @@ import {
   changePassword,
   createUser,
   editProfile,
+  editUser,
   fetchSingleUser,
   fetchUsers,
 } from "@/lib/api-client";
+import { TUpdateUserSchema } from "@/schemas/user";
 import { useUserStore } from "@/store/useUserStore";
 import { apiClient } from "@/utils/axios";
 import {
@@ -43,6 +45,12 @@ export const useEditProfile = () => {
   });
 };
 
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: changePassword,
+  });
+};
+
 export const useInfiniteUsers = (search: string) => {
   return useInfiniteQuery({
     queryKey: ["all-users", search],
@@ -64,12 +72,6 @@ export const useViewUser = (id: string) => {
   });
 };
 
-export const useChangePassword = () => {
-  return useMutation({
-    mutationFn: changePassword,
-  });
-};
-
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
 
@@ -77,6 +79,17 @@ export const useCreateUser = () => {
     mutationFn: createUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["all-users"] });
+    },
+  });
+};
+
+export const useEditUser = (id: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (updatedData: TUpdateUserSchema) => editUser(id, updatedData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user", id] });
     },
   });
 };
