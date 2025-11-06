@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { authenticateUser } from "@/lib/authenticateUser";
 import connectDB from "@/lib/mongodb";
 import projects from "@/models/projects";
 import { createProjectSchema } from "@/schemas/project";
 import { logActivity } from "@/utils/logger";
+import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 
 function getRandomColor() {
@@ -25,7 +27,10 @@ async function generateUniqueColor() {
 
 export async function GET(request: Request) {
   try {
-    const { errorResponse } = await authenticateUser(["admin"]);
+    const { user, errorResponse } = await authenticateUser([
+      "admin",
+      "manager",
+    ]);
     if (errorResponse) return errorResponse;
 
     await connectDB();
@@ -35,18 +40,15 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get("limit") || "10");
     const search = searchParams.get("search") || "";
 
-    const query = search ? { name: { $regex: search, $options: "i" } } : {};
+    const userObjectId = new mongoose.Types.ObjectId(user.id);
 
-    const projectList = await projects.aggregate([
-      { $match: query },
-      {
-        $lookup: {
-          from: "users",
-          localField: "createdBy",
-          foreignField: "_id",
-          as: "createdBy",
-        },
-      },
+    const searchMatch = search
+      ? { name: { $regex: search, $options: "i" } }
+      : {};
+
+    const pipeline: any[] = [
+      { $match: searchMatch },
+
       {
         $lookup: {
           from: "teams",
@@ -55,7 +57,33 @@ export async function GET(request: Request) {
           as: "teams",
         },
       },
+
+      {
+        $lookup: {
+          from: "users",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "createdBy",
+        },
+      },
       { $unwind: "$createdBy" },
+
+      // 4️⃣ If not admin, filter only projects where:
+      //    - user created the project
+      //    - OR user is part of one of the teams' members
+      ...(user.role !== "admin"
+        ? [
+            {
+              $match: {
+                $or: [
+                  { createdBy: userObjectId },
+                  { "teams.members": userObjectId },
+                ],
+              },
+            },
+          ]
+        : []),
+
       {
         $project: {
           name: 1,
@@ -63,14 +91,16 @@ export async function GET(request: Request) {
           priority: 1,
           createdAt: 1,
           updatedAt: 1,
-
           "createdBy.name": 1,
           "teams.name": 1,
         },
       },
+
       { $skip: skip },
       { $limit: limit },
-    ]);
+    ];
+
+    const projectList = await projects.aggregate(pipeline);
 
     return NextResponse.json(projectList, { status: 200 });
   } catch (error) {
