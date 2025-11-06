@@ -31,10 +31,13 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.nextUrl));
   }
 
-  if (isProtectedRoute && session) {
+  if (isProtectedRoute && token) {
     const hasAccess = canAccessRoute({ path, role });
+
+    console.log("has access", hasAccess);
+
     if (!hasAccess) {
-      return NextResponse.redirect(new URL("/welcome", request.nextUrl));
+      return NextResponse.redirect(new URL("/forbidden", request.nextUrl));
     }
   }
 
