@@ -90,7 +90,7 @@ const ProfileInformation = ({ data }: Props) => {
         toast.success("Profile updated successfully");
       },
       onError: (error) => {
-        console.log(error);
+        console.error(error);
         toast.error("Something went wrong");
       },
     });
