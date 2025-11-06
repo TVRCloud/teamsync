@@ -15,7 +15,7 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { CollapseMenuButton } from "./CollapseMenuButton";
-import { getMenuList } from "@/lib/menu-list";
+import { useMenuList } from "@/hooks/use-menu";
 
 interface MenuProps {
   isOpen: boolean | undefined;
@@ -23,7 +23,7 @@ interface MenuProps {
 
 export function Menu({ isOpen }: MenuProps) {
   const pathname = usePathname();
-  const menuList = getMenuList(pathname);
+  const menuList = useMenuList();
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 
   const handleSubmenuToggle = (label: string) => {
