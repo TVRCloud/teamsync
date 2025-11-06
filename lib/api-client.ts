@@ -49,6 +49,18 @@ export const createUser = async (data: {
   return res.data;
 };
 
+export const editUser = async (
+  id: string,
+  data: {
+    name: string;
+    email: string;
+    role: string;
+  }
+) => {
+  const res = await apiClient.patch(`/api/users/${id}`, data);
+  return res.data;
+};
+
 // ---------------------------
 // -----------LOGS------------
 // ---------------------------
