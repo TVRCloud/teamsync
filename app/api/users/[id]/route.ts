@@ -3,6 +3,8 @@ import connectDB from "@/lib/mongodb";
 import users from "@/models/users";
 import { authenticateUser } from "@/lib/authenticateUser";
 import mongoose from "mongoose";
+import { updateUserSchema } from "@/schemas/user";
+import { logActivity } from "@/utils/logger";
 
 export async function GET(
   request: NextRequest,
@@ -117,100 +119,47 @@ export async function GET(
   }
 }
 
-// export async function PATCH(
-//   request: NextRequest,
-//   context: { params: Promise<{ id: string }> }
-// ) {
-//   try {
-//     const { id } = await context.params;
+export async function PATCH(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await context.params;
+    const { user: decoded, errorResponse } = await authenticateUser(["admin"]);
+    if (errorResponse) return errorResponse;
 
-//     const cookieStore = cookies();
-//     const token = (await cookieStore).get(config.session.cookieName)?.value;
+    await connectDB();
+    const body = await request.json();
+    const validated = updateUserSchema.parse(body);
 
-//     if (!token) {
-//       return NextResponse.json({ error: "Please log in" }, { status: 401 });
-//     }
+    const allowedUpdates = {
+      name: validated.name,
+      email: validated.email,
+      role: validated.role,
+    };
 
-//     const decoded = await verifyToken(token);
-//     if (!decoded) {
-//       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-//     }
+    const updatedUser = await users.findByIdAndUpdate(id, allowedUpdates, {
+      new: true,
+    });
 
-//     await connectDB();
+    if (!updatedUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
 
-//     const userId = id;
-//     const requesterId = decoded.id;
-//     const isAdmin = decoded.role === "admin";
+    await logActivity({
+      userId: decoded.id,
+      action: "update",
+      entityType: "user",
+      entityId: id,
+      message: `${decoded.name} Updated user ${validated.name}`,
+    });
 
-//     if (userId !== requesterId && !isAdmin) {
-//       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-//     }
-
-//     const body = await request.json();
-
-//     // Disallow password change
-//     delete body.password;
-
-//     const updatedUser = await users
-//       .findByIdAndUpdate(userId, { $set: body }, { new: true })
-//       .select("-password");
-
-//     if (!updatedUser) {
-//       return NextResponse.json({ error: "User not found" }, { status: 404 });
-//     }
-
-//     return NextResponse.json(updatedUser, { status: 200 });
-//   } catch (error) {
-//     console.error("PATCH /api/users/[id] error:", error);
-//     return NextResponse.json(
-//       { error: "Failed to update user" },
-//       { status: 500 }
-//     );
-//   }
-// }
-
-// export async function DELETE(
-//   request: NextRequest,
-//   { params }: { params: { id: string } }
-// ) {
-//   try {
-//     const cookieStore = cookies();
-//     const token = (await cookieStore).get(config.session.cookieName)?.value;
-
-//     if (!token) {
-//       return NextResponse.json({ error: "Please log in" }, { status: 401 });
-//     }
-
-//     const decoded = await verifyToken(token);
-//     if (!decoded) {
-//       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-//     }
-
-//     await connectDB();
-
-//     const userId = params.id;
-//     const requesterId = decoded.id;
-//     const isAdmin = decoded.role === "admin";
-
-//     if (userId !== requesterId && !isAdmin) {
-//       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-//     }
-
-//     const deletedUser = await users.findByIdAndDelete(userId);
-
-//     if (!deletedUser) {
-//       return NextResponse.json({ error: "User not found" }, { status: 404 });
-//     }
-
-//     return NextResponse.json(
-//       { message: "User deleted successfully" },
-//       { status: 200 }
-//     );
-//   } catch (error) {
-//     console.error("DELETE /api/users/[id] error:", error);
-//     return NextResponse.json(
-//       { error: "Failed to delete user" },
-//       { status: 500 }
-//     );
-//   }
-// }
+    return NextResponse.json(updatedUser, { status: 200 });
+  } catch (error) {
+    console.error("PATCH /api/users/[id] error:", error);
+    return NextResponse.json(
+      { error: "Failed to update user" },
+      { status: 500 }
+    );
+  }
+}
