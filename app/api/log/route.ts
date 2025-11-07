@@ -20,12 +20,23 @@ export async function GET(request: Request) {
     if (action) query.action = { $in: action.split(",") };
     if (entityType) query.entityType = { $in: entityType.split(",") };
 
-    const logs = await ActivityLog.find(query)
-      .populate("user", "name email role")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    const logs = await ActivityLog.aggregate([
+      { $match: query },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+          pipeline: [{ $project: { name: 1, email: 1 } }],
+        },
+      },
+
+      { $unwind: "$user" },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
+    ]);
 
     return NextResponse.json(logs, { status: 200 });
   } catch (error) {

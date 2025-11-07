@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -10,18 +11,26 @@ import {
   CardTitle,
 } from "../ui/card";
 import { HeaderSection } from "../ui/header-section";
-import { motion } from "framer-motion";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../ui/table";
+import { AnimatePresence, motion } from "framer-motion";
 import { Badge } from "../ui/badge";
-import { DateTime } from "luxon";
-import { Filter } from "lucide-react";
+import {
+  Activity,
+  AlertCircle,
+  User,
+  FileText,
+  Database,
+  Trash2,
+  Edit,
+  Plus,
+  CheckCircle,
+  XCircle,
+  Users,
+  Briefcase,
+  ListTodo,
+  Package,
+  RefreshCw,
+  Loader2,
+} from "lucide-react";
 import { useInView } from "react-intersection-observer";
 import {
   DropdownMenu,
@@ -33,24 +42,37 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { Skeleton } from "../ui/skeleton";
+import { DateTime } from "luxon";
 
-const getActionColor = (action: string) => {
-  const colors: Record<string, string> = {
-    create: "bg-green-100 text-green-800",
-    update: "bg-blue-100 text-blue-800",
-    delete: "bg-red-100 text-red-800",
-    comment: "bg-purple-100 text-purple-800",
-    assign: "bg-yellow-100 text-yellow-800",
-    status_change: "bg-indigo-100 text-indigo-800",
-    priority_change: "bg-pink-100 text-pink-800",
-    login: "bg-teal-100 text-teal-800",
-    logout: "bg-orange-100 text-orange-800",
+const getActionIcon = (action: string) => {
+  const icons: Record<string, any> = {
+    create: Plus,
+    update: Edit,
+    delete: Trash2,
+    comment: FileText,
+    assign: Users,
+    status_change: RefreshCw,
+    login: CheckCircle,
+    logout: XCircle,
+    other: Activity,
   };
-  return colors[action] || "bg-gray-100 text-gray-800";
+  return icons[action] || Activity;
+};
+
+const getEntityIcon = (entity: string) => {
+  const icons: Record<string, any> = {
+    task: ListTodo,
+    project: Briefcase,
+    team: Users,
+    user: User,
+    comment: FileText,
+    workspace: Package,
+  };
+  return icons[entity] || Database;
 };
 
 export default function LogsMain() {
+  // const [searchTerm, setSearchTerm] = useState("");
   const [selectedActions, setSelectedActions] = useState<string[]>([]);
   const [selectedEntities, setSelectedEntities] = useState<string[]>([]);
   const { ref, inView } = useInView();
@@ -84,21 +106,18 @@ export default function LogsMain() {
 
   const entityTypes = ["task", "project", "team", "user", "comment"];
 
-  const handleActionChange = (value: string) => {
-    setSelectedActions((prev) =>
-      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
-    );
-  };
-
-  const handleEntityChange = (value: string) => {
-    setSelectedEntities((prev) =>
-      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
-    );
-  };
-
   return (
     <div className="flex flex-col gap-3">
-      <HeaderSection title="Logs" subtitle="Manage your App's logs." />
+      <HeaderSection
+        title="System Activity Logs"
+        subtitle="Complete audit trail of all system activities."
+        icon={<Activity />}
+        actions={
+          <Button>
+            <RefreshCw className="w-4 h-4 mr-2" /> Refresh
+          </Button>
+        }
+      />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -106,163 +125,172 @@ export default function LogsMain() {
         transition={{ delay: 0.2 }}
       >
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex justify-between flex-col gap-4 md:flex-row">
             <div>
-              <CardTitle>Recent Activities</CardTitle>
-              <CardDescription>View all recorded user actions</CardDescription>
+              <CardTitle>Project Directory</CardTitle>
+              <CardDescription>
+                Search for a project to get started
+              </CardDescription>
             </div>
+            <div className="flex gap-4">
+              {/* <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search logs..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div> */}
 
-            <div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant={`${
-                      selectedActions.length > 0 || selectedEntities.length > 0
-                        ? "default"
-                        : "outline"
-                    }`}
-                    size="sm"
-                    className="relative"
-                  >
-                    {selectedActions.length + selectedEntities.length > 0 && (
-                      <Badge className="absolute -top-[10px] -right-2 h-4 w-4 bg-destructive text-white flex items-center justify-center">
-                        {selectedActions.length + selectedEntities.length}
-                      </Badge>
-                    )}
-                    <Filter className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-
-                <DropdownMenuContent className="w-auto p-2" align="end">
-                  <DropdownMenuLabel className="flex justify-between">
-                    Filters{" "}
-                    {selectedActions.length + selectedEntities.length > 0 && (
-                      <span
-                        className="cursor-pointer text-destructive hover:text-destructive/80"
-                        onClick={() => {
-                          setSelectedActions([]);
-                          setSelectedEntities([]);
-                        }}
-                      >
-                        (clear)
-                      </span>
-                    )}
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-
-                  <div className="flex gap-2">
+              <div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant={
+                        selectedActions.length > 0 ||
+                        selectedEntities.length > 0
+                          ? "default"
+                          : "outline"
+                      }
+                      className="relative"
+                    >
+                      Filter
+                      {selectedActions.length + selectedEntities.length > 0 && (
+                        <Badge
+                          variant="secondary"
+                          className="absolute -top-2 -right-2"
+                        >
+                          {selectedActions.length + selectedEntities.length}
+                        </Badge>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56">
                     <DropdownMenuGroup>
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <div className="flex flex-col gap-1 mt-1">
-                        {actions.map((a) => (
-                          <DropdownMenuCheckboxItem
-                            key={a}
-                            checked={selectedActions.includes(a)}
-                            onCheckedChange={() => handleActionChange(a)}
-                            className="capitalize"
-                          >
-                            {a.replace("_", " ")}
-                          </DropdownMenuCheckboxItem>
-                        ))}
-                      </div>
+                      {actions.map((action) => (
+                        <DropdownMenuCheckboxItem
+                          key={action}
+                          checked={selectedActions.includes(action)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedActions((prev) => [...prev, action]);
+                            } else {
+                              setSelectedActions((prev) =>
+                                prev.filter((a) => a !== action)
+                              );
+                            }
+                          }}
+                        >
+                          {action}
+                        </DropdownMenuCheckboxItem>
+                      ))}
                     </DropdownMenuGroup>
-                    <div className="w-px bg-border" />
-
+                    <DropdownMenuSeparator />
                     <DropdownMenuGroup>
-                      <DropdownMenuLabel>Entity Type</DropdownMenuLabel>
-                      <div className="flex flex-col gap-1 mt-1">
-                        {entityTypes.map((t) => (
-                          <DropdownMenuCheckboxItem
-                            key={t}
-                            checked={selectedEntities.includes(t)}
-                            onCheckedChange={() => handleEntityChange(t)}
-                            className="capitalize"
-                          >
-                            {t}
-                          </DropdownMenuCheckboxItem>
-                        ))}
-                      </div>
+                      <DropdownMenuLabel>Entities</DropdownMenuLabel>
+                      {entityTypes.map((entity) => (
+                        <DropdownMenuCheckboxItem
+                          key={entity}
+                          checked={selectedEntities.includes(entity)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedEntities((prev) => [...prev, entity]);
+                            } else {
+                              setSelectedEntities((prev) =>
+                                prev.filter((e) => e !== entity)
+                              );
+                            }
+                          }}
+                        >
+                          {entity}
+                        </DropdownMenuCheckboxItem>
+                      ))}
                     </DropdownMenuGroup>
-                  </div>
-
-                  <div className="flex gap-4">
-                    <div className="flex flex-col"></div>
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-md border overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Action</TableHead>
-                    <TableHead>Entity</TableHead>
-                    <TableHead>Message</TableHead>
-                    <TableHead>Time</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {isLoading
-                    ? Array.from({ length: 5 }).map((_, i) => (
-                        <TableRow key={i}>
-                          <TableCell>
-                            <Skeleton className="h-4 w-24" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="h-4 w-12" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="h-4 w-12" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="h-4 w-12" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="h-4 w-12" />
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    : filteredLogs.map((activity) => (
-                        <TableRow key={activity._id}>
-                          <TableCell className="font-medium">
-                            {activity.user?.name || "Unknown"}
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={getActionColor(activity.action)}>
-                              {activity.action}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">
-                              {activity.entityType}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="max-w-md truncate">
-                            {activity.message}
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {DateTime.fromISO(
-                              activity.createdAt
-                            ).toLocaleString(DateTime.DATETIME_MED)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                </TableBody>
-              </Table>
-            </div>
-            <div className="flex justify-center" ref={ref}>
-              <span className="p-4 text-center text-muted-foreground text-xs">
-                {isFetchingNextPage
-                  ? "Loading more..."
-                  : hasNextPage
-                  ? "Scroll to load more"
-                  : "No more logs"}
-              </span>
-            </div>
+
+          <CardContent>
+            <AnimatePresence>
+              {filteredLogs.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-12"
+                >
+                  <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-lg font-medium">No logs found</p>
+                  <p className="text-sm text-muted-foreground">
+                    Try changing your filters or search query
+                  </p>
+                </motion.div>
+              ) : (
+                <div className="space-y-4">
+                  {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
+                    </div>
+                  ) : (
+                    filteredLogs.map((log, i) => {
+                      const ActionIcon = getActionIcon(log.action);
+                      const EntityIcon = getEntityIcon(log.entityType);
+                      return (
+                        <motion.div
+                          key={log._id}
+                          initial={{ opacity: 0, y: 15 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.03 }}
+                          className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="p-2 rounded-full bg-primary/10">
+                            <ActionIcon className="w-4 h-4 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">{log.message}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              <User className="w-3 h-3 inline mr-1" />
+                              {log.user.name} ({log.user.email}) •{" "}
+                              {DateTime.fromISO(log.createdAt).toRelative()}
+                            </p>
+                          </div>
+
+                          <Badge
+                            variant="secondary"
+                            className="text-xs capitalize shrink-0"
+                          >
+                            <EntityIcon className="w-3 h-3 mr-1" />
+                            {log.entityType}
+                          </Badge>
+
+                          <Badge
+                            variant="outline"
+                            className="text-xs capitalize shrink-0"
+                          >
+                            {log.action}
+                          </Badge>
+                        </motion.div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </AnimatePresence>
           </CardContent>
+
+          <div className="flex justify-center" ref={ref}>
+            <span className="p-4 text-center text-muted-foreground text-xs">
+              {isFetchingNextPage
+                ? "Loading more..."
+                : hasNextPage
+                ? "Scroll to load more"
+                : "No more logs"}
+            </span>
+          </div>
         </Card>
       </motion.div>
     </div>

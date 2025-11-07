@@ -72,6 +72,11 @@ const ProfileInformation = ({ data }: Props) => {
       email: data?.email || "",
       role: data?.role || "",
     },
+    values: {
+      name: data?.name || "",
+      email: data?.email || "",
+      role: data?.role || "",
+    },
   });
 
   const handleEdit = () => {

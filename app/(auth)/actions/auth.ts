@@ -39,7 +39,7 @@ export async function registerAction(formData: FormData) {
     action: "create",
     entityType: "user",
     entityId: user._id.toString(),
-    message: `Created user ${user.email}`,
+    message: `${user.email} registered`,
   });
 
   await setSession(user);
