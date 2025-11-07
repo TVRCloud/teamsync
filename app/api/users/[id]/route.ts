@@ -151,7 +151,7 @@ export async function PATCH(
       action: "update",
       entityType: "user",
       entityId: id,
-      message: `${decoded.name} Updated user ${validated.name}`,
+      message: `Updated user ${validated.name}`,
     });
 
     return NextResponse.json(updatedUser, { status: 200 });
