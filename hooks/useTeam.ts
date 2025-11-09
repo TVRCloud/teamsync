@@ -1,7 +1,8 @@
-import { createTeam, fetchTeams } from "@/lib/api-client";
+import { createTeam, fetchSingleTeam, fetchTeams } from "@/lib/api-client";
 import {
   useInfiniteQuery,
   useMutation,
+  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 
@@ -28,3 +29,10 @@ export const useInfiniteTeams = (search: string) =>
     getNextPageParam: (lastPage, allPages) =>
       lastPage.length < 20 ? undefined : allPages.length * 20,
   });
+
+export const useViewTeam = (id: string) => {
+  return useQuery({
+    queryKey: ["team", id],
+    queryFn: () => fetchSingleTeam(id),
+  });
+};
