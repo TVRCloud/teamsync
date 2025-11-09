@@ -1,48 +1,29 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useParams } from "next/navigation";
+import { motion } from "framer-motion";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Activity,
-  Download,
-  Search,
+  Briefcase,
+  CheckCircle,
+  Edit2,
+  Users,
   User,
-  FileText,
-  Database,
-  Shield,
+  Loader2,
+  Calendar,
+  Link,
+  Tag,
+  MessageSquare,
+  ChevronsUp,
+  Clock,
+  MoreVertical,
   Settings,
   Trash2,
-  Edit,
-  Plus,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
-  Users,
-  Briefcase,
-  ListTodo,
-  Package,
-  Bell,
+  Code,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,297 +32,564 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import * as tabs from "@/components/ui/tabs";
 
-// --- Mock system logs data ---
-const systemLogs = [
-  {
-    _id: "690c46964ff6e77ed5990b31",
-    user: { name: "Amegh T S", email: "amegh2002@gmail.com" },
-    action: "create",
-    entityType: "user",
-    message: "Created user amegh2002@gmail.com",
-    createdAt: "2025-11-06T06:56:22.075Z",
-  },
-  {
-    _id: "690c7b02d514d0141bcb5da0",
-    user: { name: "Admin User", email: "admin@company.com" },
-    action: "create",
-    entityType: "user",
-    message: "Created user jithin@gmail.com",
-    createdAt: "2025-11-06T10:40:02.440Z",
-  },
-  {
-    _id: "690c7b03d514d0141bcb5da1",
-    user: { name: "Admin User", email: "admin@company.com" },
-    action: "update",
-    entityType: "project",
-    message: "Updated project status to completed",
-    createdAt: "2025-11-06T12:15:30.123Z",
-  },
-  {
-    _id: "690c7b04d514d0141bcb5da3",
-    user: { name: "Amegh T S", email: "amegh2002@gmail.com" },
-    action: "delete",
-    entityType: "task",
-    message: "Deleted task: Fix login bug",
-    createdAt: "2025-11-06T13:22:45.678Z",
-  },
-  {
-    _id: "690c7b08d514d0141bcb5dab",
-    user: { name: "Jithin Kumar", email: "jithin@gmail.com" },
-    action: "login",
-    entityType: "user",
-    message: "User logged in successfully",
-    createdAt: "2025-11-07T08:15:22.456Z",
-  },
-];
+interface TeamMember {
+  _id: string;
+  name: string;
+  avatar?: string;
+  role: string;
+  isActive: boolean;
+}
 
-// --- Component ---
-export default function SystemLogsPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [actionFilter, setActionFilter] = useState("all");
-  const [entityFilter, setEntityFilter] = useState("all");
+interface TeamProject {
+  _id: string;
+  name: string;
+  description?: string;
+  status: "active" | "completed" | "archived";
+  priority: "low" | "medium" | "high" | "urgent";
+}
 
-  const getActionIcon = (action: string) => {
-    const icons: Record<string, any> = {
-      create: Plus,
-      update: Edit,
-      delete: Trash2,
-      comment: FileText,
-      assign: Users,
-      status_change: RefreshCw,
-      login: CheckCircle,
-      logout: XCircle,
-      other: Activity,
-    };
-    return icons[action] || Activity;
+interface TeamData {
+  _id: string;
+  name: string;
+  description: string;
+  members: TeamMember[];
+  projects: TeamProject[];
+  createdBy: {
+    _id: string;
+    name: string;
   };
+  createdAt: string;
+  updatedAt: string;
+}
 
-  const getEntityIcon = (entity: string) => {
-    const icons: Record<string, any> = {
-      task: ListTodo,
-      project: Briefcase,
-      team: Users,
-      user: User,
-      comment: FileText,
-      workspace: Package,
-    };
-    return icons[entity] || Database;
-  };
+const dummyTeamData: TeamData = {
+  _id: "team_1234567890",
+  name: "Frontend Avengers",
+  description:
+    "Responsible for all client-side logic and UI/UX implementation, focusing on user experience and component architecture. This team is central to the product's visual identity.",
+  createdAt: new Date(Date.now() - 86400000 * 30).toISOString(),
+  updatedAt: new Date().toISOString(),
+  createdBy: { _id: "user_creator", name: "Alice Johnson" },
+  members: [
+    {
+      _id: "user_a",
+      name: "Bob Builder",
+      role: "lead",
+      isActive: true,
+      avatar: "https://i.pravatar.cc/150?img=68",
+    },
+    {
+      _id: "user_b",
+      name: "Charlie Code",
+      role: "member",
+      isActive: true,
+      avatar: "https://i.pravatar.cc/150?img=69",
+    },
+    {
+      _id: "user_c",
+      name: "Eve Eavesdrop",
+      role: "member",
+      isActive: false,
+      avatar: "https://i.pravatar.cc/150?img=70",
+    },
+  ],
+  projects: [
+    {
+      _id: "proj_a1",
+      name: "Dashboard Redesign",
+      description: "Complete overhaul of the main user dashboard interface.",
+      status: "active",
+      priority: "urgent",
+    },
+    {
+      _id: "proj_b2",
+      name: "Mobile App Beta",
+      description: "Developing the first version of the mobile application.",
+      status: "active",
+      priority: "high",
+    },
+    {
+      _id: "proj_c3",
+      name: "Legacy System Migration",
+      description: "Moving old API endpoints to the new server infrastructure.",
+      status: "completed",
+      priority: "medium",
+    },
+  ],
+};
 
-  const formatDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    const now = new Date();
-    const diff = now.getTime() - d.getTime();
-    const min = Math.floor(diff / 60000);
-    const hrs = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-    if (min < 1) return "Just now";
-    if (min < 60) return `${min} min ago`;
-    if (hrs < 24) return `${hrs} hr${hrs > 1 ? "s" : ""} ago`;
-    if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
-    return d.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+const useViewTeam = (id: string) => {
+  // Simulating loading state for initial render smoothness
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredLogs = systemLogs.filter((log) => {
-    const q = searchQuery.toLowerCase();
-    const matchSearch =
-      log.message.toLowerCase().includes(q) ||
-      log.user.email.toLowerCase().includes(q) ||
-      log.user.name.toLowerCase().includes(q);
-    const matchAction = actionFilter === "all" || log.action === actionFilter;
-    const matchEntity =
-      entityFilter === "all" || log.entityType === entityFilter;
-    return matchSearch && matchAction && matchEntity;
-  });
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500); // Simulate a short load time
+    return () => clearTimeout(timer);
+  }, [id]);
+
+  return { data: dummyTeamData, isLoading };
+};
+
+// --- CUSTOM COMPONENTS (Unchanged - they are fine) ---
+const getPriorityBadge = (priority: TeamProject["priority"]) => {
+  switch (priority) {
+    case "urgent":
+      return (
+        <Badge variant="destructive" className="capitalize">
+          <ChevronsUp className="w-3 h-3 mr-1" />
+          {priority}
+        </Badge>
+      );
+    case "high":
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-orange-500 text-white capitalize"
+        >
+          {priority}
+        </Badge>
+      );
+    case "medium":
+      return (
+        <Badge variant="secondary" className="capitalize">
+          {priority}
+        </Badge>
+      );
+    case "low":
+      return (
+        <Badge variant="outline" className="capitalize">
+          {priority}
+        </Badge>
+      );
+    default:
+      return null;
+  }
+};
+
+const getStatusBadge = (status: TeamProject["status"]) => {
+  switch (status) {
+    case "active":
+      return (
+        <Badge className="bg-green-500 hover:bg-green-600 text-white capitalize">
+          {status}
+        </Badge>
+      );
+    case "completed":
+      return (
+        <Badge variant="secondary" className="capitalize">
+          {status}
+        </Badge>
+      );
+    case "archived":
+      return (
+        <Badge variant="outline" className="capitalize">
+          {status}
+        </Badge>
+      );
+    default:
+      return null;
+  }
+};
+
+const TeamProjectItem = ({
+  project,
+  index,
+}: {
+  project: TeamProject;
+  index: number;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, x: 20 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ delay: 0.1 * index }}
+    className="border rounded-lg p-4 bg-card shadow-sm hover:shadow-md transition-shadow"
+  >
+    <div className="flex items-center justify-between">
+      <h4 className="text-lg font-bold flex items-center gap-2 text-foreground">
+        <Briefcase className="w-4 h-4 text-primary" />
+        {project.name}
+      </h4>
+      <div className="flex gap-2">
+        {getPriorityBadge(project.priority)}
+        {getStatusBadge(project.status)}
+      </div>
+    </div>
+    <p className="text-sm text-muted-foreground mt-2">
+      {project.description || "No description available."}
+    </p>
+    <Button variant="link" size="sm" className="p-0 mt-3 h-auto text-xs">
+      View Project <Link className="w-3 h-3 ml-1" />
+    </Button>
+  </motion.div>
+);
+
+const MemberItem = ({
+  member,
+  index,
+}: {
+  member: TeamMember;
+  index: number;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.1 * index }}
+    className="flex items-center space-x-4 p-3 border rounded-lg bg-background hover:bg-muted/50 transition-colors"
+  >
+    <Avatar className="w-10 h-10">
+      <AvatarImage src={member.avatar || ""} />
+      <AvatarFallback className="text-xs font-semibold">
+        {member.name
+          .split(" ")
+          .map((n: string) => n[0])
+          .join("")
+          .toUpperCase()}
+      </AvatarFallback>
+    </Avatar>
+    <div className="flex-1 min-w-0">
+      <p className="font-semibold truncate">{member.name}</p>
+      <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
+    </div>
+    <Badge
+      variant={member.isActive ? "default" : "secondary"}
+      className="text-xs w-16 justify-center"
+    >
+      {member.isActive ? "Active" : "Inactive"}
+    </Badge>
+    <Button variant="ghost" size="icon" className="w-8 h-8">
+      <MoreVertical className="w-4 h-4" />
+    </Button>
+  </motion.div>
+);
+
+// --- MAIN COMPONENT ---
+
+const ViewTeamMain = () => {
+  const params = useParams<{ id: string }>();
+  const { data, isLoading } = useViewTeam(params.id || "dummy_id");
+
+  if (isLoading)
+    return (
+      <div className="p-8 text-center">
+        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-3" /> Loading Team
+        Data...
+      </div>
+    );
+
+  if (!data)
+    return (
+      <div className="p-8 text-center text-destructive">Team not found.</div>
+    );
+
+  const activeProjectsCount = data.projects.filter(
+    (p) => p.status === "active"
+  ).length;
+  const activeMembersCount = data.members.filter((m) => m.isActive).length;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-linear-to-r from-background via-primary/5 to-background">
-        <div className="max-w-[1800px] mx-auto px-6 py-6 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-linear-to-br from-primary/20 to-secondary/20">
-              <Activity className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold mb-1">System Activity Logs</h1>
-              <p className="text-muted-foreground">
-                Complete audit trail of all system activities
+    <div className="flex flex-col gap-3">
+      {/* --- UNIQUE HEADER SECTION: Emphasizing Group Identity --- */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="border-b pb-8 px-4 sm:px-6 pt-4" // Added pt-4 for spacing
+      >
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="flex items-start gap-4 sm:gap-6">
+            {/* Team Logo/Icon Block (More distinctive than an Avatar) */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative"
+            >
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-linear-to-br from-primary to-blue-500/80 border-4 border-background shadow-xl flex items-center justify-center">
+                <Code className="w-10 h-10 sm:w-12 sm:h-12 text-primary-foreground" />
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <h1 className="text-4xl sm:text-5xl font-extrabold text-foreground mb-1">
+                {data.name}
+              </h1>
+              <p className="text-base text-primary mb-3 font-medium flex items-center gap-1">
+                <Users className="w-4 h-4" /> {data.members.length} Members
               </p>
-            </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <User className="w-3 h-3" /> Lead: {data.createdBy.name}
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  ID: {data._id.slice(-8)}
+                </Badge>
+              </div>
+            </motion.div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline">
-              <RefreshCw className="w-4 h-4 mr-2" /> Refresh
-            </Button>
-            <Button variant="outline">
-              <Download className="w-4 h-4 mr-2" /> Export
+
+          {/* Action Buttons (Consistent structure but customized look) */}
+          <div className="flex items-center gap-2 self-start md:self-auto">
+            <Button size="sm" className="sm:h-10">
+              <Edit2 className="w-4 h-4 mr-2" />
+              Edit Details
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button>
-                  <Settings className="w-4 h-4 mr-2" /> Configure
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="w-8 h-8 sm:w-10 sm:h-10"
+                >
+                  <MoreVertical className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Log Settings</DropdownMenuLabel>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Team Actions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
-                  <Shield className="w-4 h-4 mr-2" /> Access Control
+                  <Settings className="w-4 h-4 mr-2" />
+                  Team Settings
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Bell className="w-4 h-4 mr-2" /> Alert Rules
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Trash2 className="w-4 h-4 mr-2" /> Clear Old Logs
+                <DropdownMenuItem className="text-destructive">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Archive Team
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </div>
+      </motion.div>
+
+      {/* --- STATS CARDS: Focusing on Team Health --- */}
+      <div className="px-4 sm:px-6 -mt-8 mb-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
+          {[
+            { label: "Total Members", value: data.members.length, icon: Users },
+            {
+              label: "Active Staff",
+              value: activeMembersCount,
+              icon: CheckCircle,
+            },
+            {
+              label: "Total Projects",
+              value: data.projects.length,
+              icon: Briefcase,
+            },
+            {
+              label: "Current Workload",
+              value: activeProjectsCount,
+              icon: Clock,
+            },
+          ].map((stat, idx) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 * idx }}
+            >
+              <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <stat.icon className="w-5 h-5 text-muted-foreground" />
+                    <span className="text-2xl sm:text-3xl font-bold">
+                      {stat.value ?? "-"}
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-muted-foreground font-medium">
+                    {stat.label ?? "-"}
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
       </div>
 
-      <div className="max-w-[1800px] mx-auto px-6 py-8 space-y-8">
-        {/* Filter Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Filters</CardTitle>
-            <CardDescription>Search and narrow down logs</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <Label>Search</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search logs..."
-                    className="pl-10"
-                  />
-                </div>
-              </div>
+      {/* --- TABS SECTION --- */}
+      <div className="pb-12 px-4 sm:px-6">
+        <tabs.Tabs defaultValue="overview" className="w-full">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            {/* Horizontal Scrolling Tabs (The fixed version) */}
+            <tabs.TabsList className="flex overflow-x-auto whitespace-nowrap p-1 mb-4 h-10 border rounded-lg bg-muted/50 scrollbar-hide">
+              <tabs.TabsTrigger
+                value="overview"
+                className="min-w-fit px-4 text-sm"
+              >
+                Overview
+              </tabs.TabsTrigger>
+              <tabs.TabsTrigger
+                value="projects"
+                className="min-w-fit px-4 text-sm"
+              >
+                Projects ({data.projects.length})
+              </tabs.TabsTrigger>
+              <tabs.TabsTrigger
+                value="members"
+                className="min-w-fit px-4 text-sm"
+              >
+                Members ({data.members.length})
+              </tabs.TabsTrigger>
+              <tabs.TabsTrigger
+                value="activity"
+                className="min-w-fit px-4 text-sm"
+              >
+                Activity
+              </tabs.TabsTrigger>
+            </tabs.TabsList>
+          </motion.div>
 
-              <div className="space-y-2">
-                <Label>Action</Label>
-                <Select value={actionFilter} onValueChange={setActionFilter}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="create">Create</SelectItem>
-                    <SelectItem value="update">Update</SelectItem>
-                    <SelectItem value="delete">Delete</SelectItem>
-                    <SelectItem value="login">Login</SelectItem>
-                    <SelectItem value="logout">Logout</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Entity</Label>
-                <Select value={entityFilter} onValueChange={setEntityFilter}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="task">Task</SelectItem>
-                    <SelectItem value="project">Project</SelectItem>
-                    <SelectItem value="team">Team</SelectItem>
-                    <SelectItem value="user">User</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Logs List */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Activity Timeline</CardTitle>
-              <CardDescription>
-                Showing {filteredLogs.length} of {systemLogs.length}
-              </CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <AnimatePresence>
-              {filteredLogs.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-12"
-                >
-                  <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-lg font-medium">No logs found</p>
-                  <p className="text-sm text-muted-foreground">
-                    Try changing your filters or search query
+          <tabs.TabsContent value="overview" className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+            >
+              {/* Team Narrative/Description Card (Large Focus) */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5 text-muted-foreground" />{" "}
+                    Team Narrative
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-foreground/80 leading-relaxed">
+                    {data.description ||
+                      "No detailed description available. This team is focused on delivering high-quality, scalable solutions for its assigned projects."}
                   </p>
-                </motion.div>
-              ) : (
-                <div className="space-y-4">
-                  {filteredLogs.map((log, i) => {
-                    const ActionIcon = getActionIcon(log.action);
-                    const EntityIcon = getEntityIcon(log.entityType); // Used for the badge
-                    return (
-                      <motion.div
-                        key={log._id}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.03 }}
-                        className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                      >
-                        {/* Action Icon */}
-                        <div className="p-2 rounded-full bg-primary/10">
-                          <ActionIcon className="w-4 h-4 text-primary" />
-                        </div>
-                        {/* Message and Details */}
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{log.message}</p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            <User className="w-3 h-3 inline mr-1" />
-                            {log.user.name} ({log.user.email}) •{" "}
-                            {formatDate(log.createdAt)}
-                          </p>
-                        </div>
+                </CardContent>
+              </Card>
 
-                        {/* Entity Type Badge (New) */}
-                        <Badge
-                          variant="secondary"
-                          className="text-xs capitalize shrink-0"
-                        >
-                          <EntityIcon className="w-3 h-3 mr-1" />
-                          {log.entityType}
-                        </Badge>
+              {/* Team Details Card (Unchanged, as this is essential metadata) */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.7 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Metadata</CardTitle>
+                    <CardDescription>
+                      Administrative details and history.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-sm space-y-3 pt-6">
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium text-muted-foreground flex items-center gap-1">
+                        <Tag className="w-3 h-3" /> Team ID:
+                      </p>
+                      <p className="font-mono text-xs">{data._id.slice(-8)}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium text-muted-foreground flex items-center gap-1">
+                        <User className="w-3 h-3" /> Created By:
+                      </p>
+                      <p>{data.createdBy.name}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium text-muted-foreground flex items-center gap-1">
+                        <Calendar className="w-3 h-3" /> Created On:
+                      </p>
+                      <p>{new Date(data.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium text-muted-foreground flex items-center gap-1">
+                        <Calendar className="w-3 h-3" /> Last Updated:
+                      </p>
+                      <p>{new Date(data.updatedAt).toLocaleDateString()}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </motion.div>
+          </tabs.TabsContent>
 
-                        {/* Action Badge (Original) */}
-                        <Badge
-                          variant="outline"
-                          className="text-xs capitalize shrink-0"
-                        >
-                          {log.action}
-                        </Badge>
-                      </motion.div>
-                    );
-                  })}
+          {/* Projects Tab: Displaying Project Cards */}
+          <tabs.TabsContent value="projects">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              {data.projects.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {data.projects.map((project: TeamProject, index: number) => (
+                    <TeamProjectItem
+                      key={project._id}
+                      project={project}
+                      index={index}
+                    />
+                  ))}
                 </div>
+              ) : (
+                <p className="text-muted-foreground p-4 border rounded-md">
+                  This team is not currently assigned to any projects.
+                </p>
               )}
-            </AnimatePresence>
-          </CardContent>
-        </Card>
+            </motion.div>
+          </tabs.TabsContent>
+
+          {/* Members Tab: Displaying Member Cards */}
+          <tabs.TabsContent value="members">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              {data.members.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {" "}
+                  {/* Increased grid columns on desktop */}
+                  {data.members.map((member: TeamMember, index: number) => (
+                    <MemberItem
+                      key={member._id}
+                      member={member}
+                      index={index}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground p-4 border rounded-md">
+                  This team currently has no members.
+                </p>
+              )}
+            </motion.div>
+          </tabs.TabsContent>
+
+          <tabs.TabsContent value="activity">
+            <Card>
+              <CardHeader>
+                <CardTitle>Team Activity Log</CardTitle>
+              </CardHeader>
+              <CardContent>
+                Recent team activity and audit trails will be displayed here...
+              </CardContent>
+            </Card>
+          </tabs.TabsContent>
+        </tabs.Tabs>
       </div>
     </div>
   );
-}
+};
+
+export default ViewTeamMain;
