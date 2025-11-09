@@ -12,7 +12,7 @@ export async function GET(
 ) {
   try {
     const { id } = await context.params;
-    const { errorResponse } = await authenticateUser(["admin"]);
+    const { errorResponse } = await authenticateUser(["admin", "manager"]);
 
     if (errorResponse) return errorResponse;
 
