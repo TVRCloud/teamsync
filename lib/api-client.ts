@@ -143,3 +143,8 @@ export const fetchTeams = async ({
   const res = await apiClient.get(`/api/teams?${params.toString()}`);
   return res.data;
 };
+
+export const fetchSingleTeam = async (id: string) => {
+  const res = await apiClient.get(`/api/teams/${id}`);
+  return res.data;
+};
