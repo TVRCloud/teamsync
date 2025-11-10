@@ -70,7 +70,7 @@ export async function GET(
       return NextResponse.json({ error: "Team not found" }, { status: 404 });
     }
 
-    return NextResponse.json(team, { status: 200 });
+    return NextResponse.json(team[0], { status: 200 });
   } catch (error) {
     console.error("GET /api/teams/[id]:", error);
     return NextResponse.json(
