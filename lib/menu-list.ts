@@ -7,11 +7,12 @@ import {
   MessageSquare,
   BarChart3,
   Settings,
-  FileText,
   UserCog,
   Tags,
   Bell,
   Briefcase,
+  FileSpreadsheet,
+  ScrollText,
 } from "lucide-react";
 
 export const menuList = [
@@ -96,7 +97,7 @@ export const menuList = [
       {
         href: "/reports/timesheet",
         label: "Timesheet",
-        icon: FileText,
+        icon: FileSpreadsheet,
       },
     ],
   },
@@ -112,6 +113,11 @@ export const menuList = [
         href: "/settings/app",
         label: "App Settings",
         icon: Settings,
+      },
+      {
+        href: "/logs",
+        label: "Logs",
+        icon: ScrollText,
       },
     ],
   },
