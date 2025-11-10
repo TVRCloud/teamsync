@@ -5,6 +5,7 @@ export const protectedRoutes = [
   "/feedback",
   "/settings",
   "/members",
+  "/logs",
 ];
 export const authRoutes = ["/login", "/register"];
 export const publicRoutes = ["/welcome"];
