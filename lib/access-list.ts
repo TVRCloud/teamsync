@@ -12,4 +12,7 @@ export const routeAccessMap: Record<string, AccessControlRule> = {
   "/projects": {
     roles: ["admin", "manager"],
   },
+  "/logs": {
+    roles: ["admin"],
+  },
 };
