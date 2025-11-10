@@ -72,16 +72,21 @@ const getEntityIcon = (entity: string) => {
 };
 
 export default function LogsMain() {
-  // const [searchTerm, setSearchTerm] = useState("");
   const [selectedActions, setSelectedActions] = useState<string[]>([]);
   const [selectedEntities, setSelectedEntities] = useState<string[]>([]);
   const { ref, inView } = useInView();
 
-  const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
-    useInfiniteLogs({
-      action: selectedActions.join(","),
-      entityType: selectedEntities.join(","),
-    });
+  const {
+    data,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isLoading,
+    isFetchingNextPage,
+  } = useInfiniteLogs({
+    action: selectedActions.join(","),
+    entityType: selectedEntities.join(","),
+  });
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
@@ -113,8 +118,11 @@ export default function LogsMain() {
         subtitle="Complete audit trail of all system activities."
         icon={<Activity />}
         actions={
-          <Button>
-            <RefreshCw className="w-4 h-4 mr-2" /> Refresh
+          <Button onClick={() => refetch()}>
+            <RefreshCw
+              className={`${isLoading && "animate-spin"} w-4 h-4 mr-2`}
+            />
+            Refresh
           </Button>
         }
       />
@@ -133,17 +141,6 @@ export default function LogsMain() {
               </CardDescription>
             </div>
             <div className="flex gap-4">
-              {/* <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search logs..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div> */}
-
               <div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -217,24 +214,24 @@ export default function LogsMain() {
 
           <CardContent>
             <AnimatePresence>
-              {filteredLogs.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-12"
-                >
-                  <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-lg font-medium">No logs found</p>
-                  <p className="text-sm text-muted-foreground">
-                    Try changing your filters or search query
-                  </p>
-                </motion.div>
-              ) : (
+              {
                 <div className="space-y-4">
                   {isLoading ? (
                     <div className="flex items-center justify-center py-12">
                       <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
                     </div>
+                  ) : filteredLogs.length === 0 ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-center py-12"
+                    >
+                      <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-lg font-medium">No logs found</p>
+                      <p className="text-sm text-muted-foreground">
+                        Try changing your filters or search query
+                      </p>
+                    </motion.div>
                   ) : (
                     filteredLogs.map((log, i) => {
                       const ActionIcon = getActionIcon(log.action);
@@ -278,7 +275,7 @@ export default function LogsMain() {
                     })
                   )}
                 </div>
-              )}
+              }
             </AnimatePresence>
           </CardContent>
 
