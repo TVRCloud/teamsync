@@ -2,7 +2,8 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { config } from "@/lib/config";
-import { verifyToken } from "@/utils/auth";
+import { clearSession, verifyToken } from "@/utils/auth";
+import useSession from "@/models/session";
 
 type AuthResult =
   | { user: any; errorResponse?: never }
@@ -28,6 +29,18 @@ export async function authenticateUser(
     return {
       errorResponse: NextResponse.json(
         { error: "Invalid token" },
+        { status: 401 }
+      ),
+    };
+  }
+
+  const session = await useSession.findOne({ jti: decoded.jti });
+
+  if (!session || !session.isActive || session.expiresAt < new Date()) {
+    await clearSession();
+    return {
+      errorResponse: NextResponse.json(
+        { error: "Session expired" },
         { status: 401 }
       ),
     };

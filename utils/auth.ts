@@ -2,7 +2,9 @@
 import { config } from "../lib/config";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import crypto from "crypto";
+import useSession from "@/models/session";
 
 const SECRET_KEY = new TextEncoder().encode(config.jwt.secret);
 const EXPIRES_IN = config.jwt.expiresIn;
@@ -10,6 +12,7 @@ const EXPIRES_IN = config.jwt.expiresIn;
 export interface DecodedToken {
   id: string;
   role: string;
+  jti: string;
   iat?: number;
   exp?: number;
 }
@@ -56,11 +59,22 @@ export async function getSession() {
 }
 
 export async function setSession(user: Record<string, any>) {
+  const jti = crypto.randomUUID();
+  const hdrs = await headers();
+
+  const userAgent = hdrs.get("user-agent");
+  const ip =
+    hdrs.get("x-forwarded-for") ??
+    hdrs.get("x-real-ip") ??
+    hdrs.get("cf-connecting-ip") ??
+    "";
+
   const token = await createToken({
     id: user.id,
     // email: user.email,
     // name: user.name,
     role: user.role,
+    jti,
   });
 
   const cookieStore = await cookies();
@@ -70,9 +84,26 @@ export async function setSession(user: Record<string, any>) {
     sameSite: "lax",
     maxAge: config.session.timeout,
   });
+
+  await useSession.create({
+    user: user.id,
+    isActive: true,
+    jti,
+    ip,
+    userAgent,
+    loggedInAt: new Date(),
+    expiresAt: new Date(Date.now() + config.session.timeout * 1000),
+  });
 }
 
 export async function clearSession() {
   const cookieStore = await cookies();
+  const token = cookieStore.get(config.session.cookieName)?.value;
+
+  const jti = token ? (await verifyToken(token))?.jti : null;
+
+  if (token && jti) {
+    await useSession.updateOne({ jti }, { isActive: false });
+  }
   cookieStore.delete(config.session.cookieName);
 }

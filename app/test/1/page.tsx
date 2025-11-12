@@ -15,14 +15,12 @@ import {
   Search,
   Download,
   RefreshCw,
-  Trash2,
   LogOut,
   Eye,
   MoreVertical,
-  Activity,
   Calendar,
   Wifi,
-  Settings,
+  // Removed unused icons: Activity, Settings
 } from "lucide-react";
 import {
   Card,
@@ -37,7 +35,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
+// Removed unused imports: Progress, Select components
 import {
   Select,
   SelectContent,
@@ -178,11 +176,14 @@ const sessions = [
 const SessionsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  // const [selectedSession, setSelectedSession] = useState(null); // Unused state
 
+  // Helper function to parse user agent for device, browser, and OS
   const parseUserAgent = (ua: string) => {
     const isMobile = /Mobile|Android|iPhone/i.test(ua);
     const isTablet = /iPad|Tablet/i.test(ua);
+    const isChrome = /Chrome/i.test(ua);
+    const isFirefox = /Firefox/i.test(ua);
+    const isSafari = /Safari/i.test(ua) && !/Chrome/i.test(ua);
     const isWindows = /Windows/i.test(ua);
     const isMac = /Macintosh|Mac OS X/i.test(ua);
     const isLinux = /Linux/i.test(ua);
@@ -190,6 +191,7 @@ const SessionsPage = () => {
 
     let device = "Desktop";
     let deviceIcon = Monitor;
+    let browser = "Unknown";
     let os = "Unknown";
 
     if (isMobile) {
@@ -200,12 +202,16 @@ const SessionsPage = () => {
       deviceIcon = Tablet;
     }
 
+    if (isChrome) browser = "Chrome";
+    else if (isFirefox) browser = "Firefox";
+    else if (isSafari) browser = "Safari";
+
     if (isWindows) os = "Windows";
     else if (isMac) os = "macOS";
     else if (isLinux) os = "Linux";
     else if (isIOS) os = "iOS";
 
-    return { device, deviceIcon, os };
+    return { device, deviceIcon, browser, os };
   };
 
   const getLocationFromIP = (ip: string) => {
@@ -237,21 +243,9 @@ const SessionsPage = () => {
     inactive: sessions.filter((s) => !s.isActive).length,
   };
 
-  const deviceBreakdown = {
-    desktop: sessions.filter(
-      (s) => parseUserAgent(s.userAgent).device === "Desktop"
-    ).length,
-    mobile: sessions.filter(
-      (s) => parseUserAgent(s.userAgent).device === "Mobile"
-    ).length,
-    tablet: sessions.filter(
-      (s) => parseUserAgent(s.userAgent).device === "Tablet"
-    ).length,
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Header (Simplified) */}
       <div className="border-b bg-linear-to-r from-background via-primary/5 to-background">
         <div className="max-w-[1800px] mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
@@ -260,9 +254,11 @@ const SessionsPage = () => {
                 <Shield className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold mb-1">Active Sessions</h1>
+                <h1 className="text-3xl font-bold mb-1">
+                  Session Management List
+                </h1>
                 <p className="text-muted-foreground">
-                  Monitor and manage user authentication sessions
+                  View and manage all user authentication sessions
                 </p>
               </div>
             </div>
@@ -274,237 +270,104 @@ const SessionsPage = () => {
               </Button>
               <Button variant="outline">
                 <Download className="w-4 h-4 mr-2" />
-                Export
+                Export List
               </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button>
-                    <Settings className="w-4 h-4 mr-2" />
-                    Settings
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>Session Settings</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <Clock className="w-4 h-4 mr-2" />
-                    Session Duration
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Shield className="w-4 h-4 mr-2" />
-                    Security Rules
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive">
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Clear All Sessions
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-[1800px] mx-auto px-6 py-8 space-y-8">
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            {
-              label: "Total Sessions",
-              value: stats.total,
-              icon: Activity,
-              color: "from-blue-500 to-blue-600",
-            },
-            {
-              label: "Active",
-              value: stats.active,
-              icon: CheckCircle,
-              color: "from-green-500 to-green-600",
-            },
-            {
-              label: "Inactive",
-              value: stats.inactive,
-              icon: XCircle,
-              color: "from-gray-500 to-gray-600",
-            },
-            {
-              label: "Expiring Soon",
-              value: "0",
-              icon: AlertTriangle,
-              color: "from-orange-500 to-orange-600",
-            },
-          ].map((stat, idx) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-            >
-              <Card className="relative overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow">
-                <div
-                  className={`absolute top-0 right-0 w-24 h-24 bg-linear-to-br ${stat.color} opacity-10 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-500`}
-                />
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <stat.icon className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-2xl font-bold">{stat.value}</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground font-medium">
-                    {stat.label}
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Device Breakdown & Filters */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Device Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Device Distribution</CardTitle>
-              <CardDescription>Sessions by device type</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[
-                {
-                  label: "Desktop",
-                  value: deviceBreakdown.desktop,
-                  icon: Monitor,
-                  color: "from-blue-500 to-blue-600",
-                },
-                {
-                  label: "Mobile",
-                  value: deviceBreakdown.mobile,
-                  icon: Smartphone,
-                  color: "from-green-500 to-green-600",
-                },
-                {
-                  label: "Tablet",
-                  value: deviceBreakdown.tablet,
-                  icon: Tablet,
-                  color: "from-purple-500 to-purple-600",
-                },
-              ].map((device, idx) => (
-                <motion.div
-                  key={device.label}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`p-2 rounded-lg bg-linear-to-br ${device.color}`}
-                      >
-                        <device.icon className="w-4 h-4 text-white" />
-                      </div>
-                      <span className="font-medium text-sm">
-                        {device.label}
-                      </span>
-                    </div>
-                    <Badge variant="secondary">{device.value}</Badge>
-                  </div>
-                  <Progress
-                    value={(device.value / stats.total) * 100}
-                    className="h-2"
+        {/* Filters (Modified to take full width) */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Filter Sessions</CardTitle>
+            <CardDescription>
+              Search and filter active/inactive sessions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2 col-span-2">
+                <Label htmlFor="search">Search</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="search"
+                    placeholder="Search by user, email, or IP..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
                   />
-                </motion.div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Filters */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Filter Sessions</CardTitle>
-              <CardDescription>
-                Search and filter active sessions
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="search">Search</Label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="search"
-                      placeholder="Search by user, email, or IP..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger id="status">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Sessions</SelectItem>
-                      <SelectItem value="active">Active Only</SelectItem>
-                      <SelectItem value="inactive">Inactive Only</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
 
-              {(searchQuery || statusFilter !== "all") && (
-                <div className="flex items-center gap-2 mt-4">
-                  <span className="text-sm text-muted-foreground">
-                    Active filters:
-                  </span>
-                  {searchQuery && (
-                    <Badge variant="secondary">
-                      Search: {searchQuery}
-                      <button
-                        onClick={() => setSearchQuery("")}
-                        className="ml-2"
-                      >
-                        ×
-                      </button>
-                    </Badge>
-                  )}
-                  {statusFilter !== "all" && (
-                    <Badge variant="secondary">
-                      Status: {statusFilter}
-                      <button
-                        onClick={() => setStatusFilter("all")}
-                        className="ml-2"
-                      >
-                        ×
-                      </button>
-                    </Badge>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setStatusFilter("all");
-                    }}
-                  >
-                    Clear All
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger id="status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      All Sessions ({stats.total})
+                    </SelectItem>
+                    <SelectItem value="active">
+                      Active Only ({stats.active})
+                    </SelectItem>
+                    <SelectItem value="inactive">
+                      Inactive Only ({stats.inactive})
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-        {/* Sessions List */}
+            {(searchQuery || statusFilter !== "all") && (
+              <div className="flex items-center gap-2 mt-4">
+                <span className="text-sm text-muted-foreground">
+                  Active filters:
+                </span>
+                {searchQuery && (
+                  <Badge variant="secondary">
+                    Search: {searchQuery}
+                    <button onClick={() => setSearchQuery("")} className="ml-2">
+                      ×
+                    </button>
+                  </Badge>
+                )}
+                {statusFilter !== "all" && (
+                  <Badge variant="secondary">
+                    Status: {statusFilter}
+                    <button
+                      onClick={() => setStatusFilter("all")}
+                      className="ml-2"
+                    >
+                      ×
+                    </button>
+                  </Badge>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setStatusFilter("all");
+                  }}
+                >
+                  Clear All
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Sessions List (Core List Page Content) */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Session Details</CardTitle>
+                <CardTitle>Session Records</CardTitle>
                 <CardDescription>
                   Showing {filteredSessions.length} of {sessions.length}{" "}
                   sessions
@@ -535,7 +398,7 @@ const SessionsPage = () => {
                     const {
                       device,
                       deviceIcon: DeviceIcon,
-
+                      browser, // Added back to use in listing and dialog
                       os,
                     } = parseUserAgent(session.userAgent);
                     const location = getLocationFromIP(session.ip);
@@ -589,25 +452,33 @@ const SessionsPage = () => {
                                       {session.user.email}
                                     </p>
 
+                                    {/* Main Session Details Row */}
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                                      {/* Device + OS */}
                                       <div className="flex items-center gap-2">
                                         <DeviceIcon className="w-4 h-4 text-muted-foreground" />
                                         <span className="text-muted-foreground">
-                                          {device}
+                                          {device} ({os})
                                         </span>
                                       </div>
+
+                                      {/* Browser (Restored) */}
                                       <div className="flex items-center gap-2">
-                                        {/* <BrowserIcon className="w-4 h-4 text-muted-foreground" /> */}
+                                        <Globe className="w-4 h-4 text-muted-foreground" />
                                         <span className="text-muted-foreground">
-                                          {/* {browser} */}
+                                          {browser}
                                         </span>
                                       </div>
+
+                                      {/* Location */}
                                       <div className="flex items-center gap-2">
                                         <MapPin className="w-4 h-4 text-muted-foreground" />
                                         <span className="text-muted-foreground truncate">
                                           {location}
                                         </span>
                                       </div>
+
+                                      {/* IP */}
                                       <div className="flex items-center gap-2">
                                         <Wifi className="w-4 h-4 text-muted-foreground" />
                                         <span className="text-muted-foreground font-mono text-xs">
@@ -671,7 +542,7 @@ const SessionsPage = () => {
                             </div>
                           </div>
 
-                          {/* Session Details Dialog */}
+                          {/* Session Details Dialog (Retained for completeness) */}
                           <DialogContent className="max-w-2xl">
                             <DialogHeader>
                               <DialogTitle className="flex items-center gap-2">
@@ -772,12 +643,12 @@ const SessionsPage = () => {
                                     </p>
                                   </div>
                                   <div className="p-3 rounded-lg bg-muted text-center">
-                                    {/* <BrowserIcon className="w-6 h-6 mx-auto mb-2 text-muted-foreground" /> */}
+                                    <Globe className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
                                     <p className="text-xs text-muted-foreground mb-1">
                                       Browser
                                     </p>
                                     <p className="text-sm font-medium">
-                                      {/* {browser} */}
+                                      {browser}
                                     </p>
                                   </div>
                                   <div className="p-3 rounded-lg bg-muted text-center">
@@ -904,117 +775,7 @@ const SessionsPage = () => {
           </CardContent>
         </Card>
 
-        {/* Security Insights */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Logins */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Login Activity</CardTitle>
-              <CardDescription>Latest authentication events</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {sessions.slice(0, 5).map((session, idx) => {
-                const { deviceIcon: DeviceIcon } = parseUserAgent(
-                  session.userAgent
-                );
-                return (
-                  <motion.div
-                    key={session._id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
-                  >
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback className="bg-linear-to-br from-primary to-secondary text-primary-foreground text-xs">
-                        {session.user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {session.user.name}
-                      </p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <DeviceIcon className="w-3 h-3" />
-                        {/* <span>{formatDate(session.loggedInAt)}</span> */}
-                      </div>
-                    </div>
-                    <Badge
-                      variant={session.isActive ? "default" : "secondary"}
-                      className="text-xs"
-                    >
-                      {session.isActive ? "Active" : "Ended"}
-                    </Badge>
-                  </motion.div>
-                );
-              })}
-            </CardContent>
-          </Card>
-
-          {/* Security Tips */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Security Recommendations</CardTitle>
-              <CardDescription>
-                Best practices for session management
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {[
-                {
-                  title: "Monitor Active Sessions",
-                  description:
-                    "Regularly review active sessions for suspicious activity",
-                  icon: Eye,
-                  color: "from-blue-500 to-blue-600",
-                },
-                {
-                  title: "Set Expiration Policy",
-                  description: "Configure appropriate session timeout periods",
-                  icon: Clock,
-                  color: "from-green-500 to-green-600",
-                },
-                {
-                  title: "Location Verification",
-                  description: "Enable alerts for logins from new locations",
-                  icon: MapPin,
-                  color: "from-purple-500 to-purple-600",
-                },
-                {
-                  title: "Terminate Suspicious Sessions",
-                  description:
-                    "Immediately end sessions from unrecognized devices",
-                  icon: AlertTriangle,
-                  color: "from-red-500 to-red-600",
-                },
-              ].map((tip, idx) => (
-                <motion.div
-                  key={tip.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="flex items-start gap-3 p-3 rounded-lg border bg-card"
-                >
-                  <div
-                    className={`p-2 rounded-lg bg-linear-to-br ${tip.color} shrink-0`}
-                  >
-                    <tip.icon className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm mb-1">{tip.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {tip.description}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
+        {/* Removed Security Insights/Recent Logins to simplify to a list page */}
       </div>
     </div>
   );
