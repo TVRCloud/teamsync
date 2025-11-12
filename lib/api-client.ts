@@ -148,3 +148,24 @@ export const fetchSingleTeam = async (id: string) => {
   const res = await apiClient.get(`/api/teams/${id}`);
   return res.data;
 };
+
+// ---------------------------
+// ---------SESSIONS----------
+// ---------------------------
+
+export const fetchSessions = async ({
+  skip,
+  search,
+}: {
+  skip: number;
+  search: string;
+}) => {
+  const params = new URLSearchParams({
+    skip: String(skip),
+    limit: "20",
+    search,
+  });
+
+  const res = await apiClient.get(`/api/session?${params.toString()}`);
+  return res.data;
+};
