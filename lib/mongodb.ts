@@ -24,14 +24,16 @@ export default async function connectDB() {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
-    console.log("🔗 Connecting to MongoDB at", config.mongodb.uri);
     cached.promise = mongoose
       .connect(config.mongodb.uri, {
         bufferCommands: false,
         serverSelectionTimeoutMS: 10000,
       })
       .then((mongooseInstance) => {
-        console.log("✅ Connected to MongoDB:", mongooseInstance.connection.name);
+        console.log(
+          "✅ Connected to MongoDB:",
+          mongooseInstance.connection.name
+        );
         return mongooseInstance;
       })
       .catch((err) => {
@@ -43,4 +45,3 @@ export default async function connectDB() {
   cached.conn = await cached.promise;
   return cached.conn;
 }
-
