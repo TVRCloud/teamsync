@@ -135,11 +135,7 @@ export default function LandingPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-8 w-8">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              </div>
-            ) : !user ? (
+            {!user ? (
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -158,10 +154,23 @@ export default function LandingPage() {
                     className="relative h-8 w-8 rounded-full"
                   >
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.image || ""} alt={user?.name} />
-                      <AvatarFallback>
-                        {user?.name ? user.name.charAt(0).toUpperCase() : "?"}
-                      </AvatarFallback>
+                      {isLoading ? (
+                        <div className="flex items-center justify-center h-8 w-8">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        </div>
+                      ) : (
+                        <>
+                          <AvatarImage
+                            src={user?.image || ""}
+                            alt={user?.name}
+                          />
+                          <AvatarFallback>
+                            {user?.name
+                              ? user.name.charAt(0).toUpperCase()
+                              : "?"}
+                          </AvatarFallback>
+                        </>
+                      )}
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
