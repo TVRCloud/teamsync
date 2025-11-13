@@ -27,13 +27,13 @@ async function generateUniqueColor() {
 
 export async function GET(request: Request) {
   try {
+    await connectDB();
     const { user, errorResponse } = await authenticateUser([
       "admin",
       "manager",
     ]);
     if (errorResponse) return errorResponse;
 
-    await connectDB();
     const { searchParams } = new URL(request.url);
 
     const skip = parseInt(searchParams.get("skip") || "0");
@@ -114,13 +114,13 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    await connectDB();
     const { user: decoded, errorResponse } = await authenticateUser([
       "admin",
       "manager",
     ]);
     if (errorResponse) return errorResponse;
 
-    await connectDB();
     const body = await request.json();
     const validated = createProjectSchema.parse(body);
 

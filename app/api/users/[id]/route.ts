@@ -11,12 +11,11 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    await connectDB();
     const { id } = await context.params;
     const { errorResponse } = await authenticateUser(["admin", "manager"]);
 
     if (errorResponse) return errorResponse;
-
-    await connectDB();
     // const user = await users.findById(id).select("-password");
 
     const user = await users.aggregate([
@@ -124,11 +123,11 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    await connectDB();
     const { id } = await context.params;
     const { user: decoded, errorResponse } = await authenticateUser(["admin"]);
     if (errorResponse) return errorResponse;
 
-    await connectDB();
     const body = await request.json();
     const validated = updateUserSchema.parse(body);
 

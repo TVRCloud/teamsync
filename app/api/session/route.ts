@@ -5,10 +5,10 @@ import useSession from "@/models/session";
 
 export async function GET(request: Request) {
   try {
+    await connectDB();
     const { errorResponse } = await authenticateUser(["admin"]);
     if (errorResponse) return errorResponse;
 
-    await connectDB();
     const { searchParams } = new URL(request.url);
 
     const skip = parseInt(searchParams.get("skip") || "0");

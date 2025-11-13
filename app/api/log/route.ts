@@ -6,10 +6,10 @@ import { authenticateUser } from "@/lib/authenticateUser";
 
 export async function GET(request: Request) {
   try {
+    await connectDB();
     const { errorResponse } = await authenticateUser(["admin"]);
     if (errorResponse) return errorResponse;
 
-    await connectDB();
     const { searchParams } = new URL(request.url);
     const skip = Number.parseInt(searchParams.get("skip") || "0");
     const limit = Number.parseInt(searchParams.get("limit") || "50");

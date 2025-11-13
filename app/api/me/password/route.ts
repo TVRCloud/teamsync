@@ -6,10 +6,10 @@ import { NextResponse } from "next/server";
 
 export async function PATCH(request: Request) {
   try {
+    await connectDB();
     const { user: decoded, errorResponse } = await authenticateUser();
     if (errorResponse) return errorResponse;
 
-    await connectDB();
     const { oldPassword, newPassword, confirmPassword } = await request.json();
 
     if (!oldPassword || !newPassword || !confirmPassword) {

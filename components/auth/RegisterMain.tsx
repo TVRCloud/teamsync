@@ -62,7 +62,7 @@ const SignupMain = () => {
         toast.error(res.message);
       } else {
         toast.success(res.message);
-        router.push("/dashboard");
+        router.push("/welcome");
       }
     } catch (error) {
       console.error(error);
