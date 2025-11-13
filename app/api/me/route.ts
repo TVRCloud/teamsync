@@ -6,11 +6,10 @@ import { updateUserSchema } from "@/schemas/user";
 
 export async function GET() {
   try {
+    await connectDB();
     const { user: decoded, errorResponse } = await authenticateUser();
-
     if (errorResponse) return errorResponse;
 
-    await connectDB();
     const user = await users.findById(decoded.id).select("-password");
 
     // const user = await users.aggregate([
@@ -38,10 +37,10 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
+    await connectDB();
     const { user: decoded, errorResponse } = await authenticateUser();
     if (errorResponse) return errorResponse;
 
-    await connectDB();
     const body = await request.json();
     const validated = updateUserSchema.parse(body);
 

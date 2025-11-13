@@ -8,11 +8,11 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    await connectDB();
     const { id } = await context.params;
     const { errorResponse } = await authenticateUser(["admin"]);
     if (errorResponse) return errorResponse;
 
-    await connectDB();
     const log = await ActivityLog.find({ user: id });
 
     if (!log) {

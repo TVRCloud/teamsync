@@ -9,11 +9,10 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    await connectDB();
     const { id } = await context.params;
     const { errorResponse } = await authenticateUser(["admin", "manager"]);
     if (errorResponse) return errorResponse;
-
-    await connectDB();
 
     const team = await teams.aggregate([
       {
