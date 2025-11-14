@@ -1,4 +1,11 @@
-import { createTeam, fetchSingleTeam, fetchTeams } from "@/lib/api-client";
+import {
+  createTeam,
+  deleteTeam,
+  editTeam,
+  fetchSingleTeam,
+  fetchTeams,
+} from "@/lib/api-client";
+import { TUpdateTeamSchema } from "@/schemas/teams";
 import {
   useInfiniteQuery,
   useMutation,
@@ -34,5 +41,27 @@ export const useViewTeam = (id: string) => {
   return useQuery({
     queryKey: ["team", id],
     queryFn: () => fetchSingleTeam(id),
+  });
+};
+
+export const useEditTeam = (id: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (updatedData: TUpdateTeamSchema) => editTeam(id, updatedData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["team", id] });
+    },
+  });
+};
+
+export const useDeleteTeam = (id: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => deleteTeam(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-teams"] });
+    },
   });
 };

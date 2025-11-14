@@ -10,25 +10,12 @@ import {
   CheckCircle,
   Clock,
   Code,
-  Edit2,
   MessageSquare,
-  MoreVertical,
-  Settings,
   Tag,
-  Trash2,
   User,
   Users,
 } from "lucide-react";
 import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
 import {
   Card,
   CardContent,
@@ -39,6 +26,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import TeamProjectItem from "./TeamProjectItem";
 import MemberItem from "./MemberItem";
+import EditTeam from "./EditTeam";
+import DeleteTeam from "./DeleteTeam";
 
 const ViewTeamMain = () => {
   const params = useParams<{ id: string }>();
@@ -92,33 +81,7 @@ const ViewTeamMain = () => {
           </div>
 
           <div className="flex items-center gap-2 self-start md:self-auto">
-            <Button size="sm" className="sm:h-10">
-              <Edit2 className="w-4 h-4 mr-2" />
-              Edit Details
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="w-8 h-8 sm:w-10 sm:h-10"
-                >
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Team Actions</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Settings className="w-4 h-4 mr-2" />
-                  Team Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive">
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Archive Team
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <EditTeam defaultValues={data} />
           </div>
         </div>
       </motion.div>
@@ -188,6 +151,9 @@ const ViewTeamMain = () => {
               </TabsTrigger>
               <TabsTrigger value="activity" className="min-w-fit px-4 text-sm">
                 Activity
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="min-w-fit px-4 text-sm">
+                Settings
               </TabsTrigger>
             </TabsList>
           </motion.div>
@@ -313,6 +279,10 @@ const ViewTeamMain = () => {
                 Recent team activity and audit trails will be displayed here...
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <DeleteTeam data={data} />
           </TabsContent>
         </Tabs>
       </div>
