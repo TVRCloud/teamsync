@@ -7,3 +7,5 @@ export const createTeamSchema = z.object({
 });
 
 export type TCreateTeamSchema = z.infer<typeof createTeamSchema>;
+
+export type TUpdateTeamSchema = z.infer<typeof createTeamSchema>;
