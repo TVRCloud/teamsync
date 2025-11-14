@@ -149,6 +149,19 @@ export const fetchSingleTeam = async (id: string) => {
   return res.data;
 };
 
+export const editTeam = async (
+  id: string,
+  data: { name: string; description?: string; members?: string[] }
+) => {
+  const res = await apiClient.patch(`/api/teams/${id}`, data);
+  return res.data;
+};
+
+export const deleteTeam = async (id: string) => {
+  const res = await apiClient.delete(`/api/teams/${id}`);
+  return res.data;
+};
+
 // ---------------------------
 // ---------SESSIONS----------
 // ---------------------------
