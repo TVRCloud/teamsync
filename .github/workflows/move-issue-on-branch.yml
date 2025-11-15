@@ -18,7 +18,7 @@ jobs:
           echo "ISSUE_NUMBER=$ISSUE_NUMBER" >> $GITHUB_ENV
 
       - name: Move issue to In Progress
-        uses: peter-evans/github-project-automation-plus@v0.13.0
+        uses: peter-evans/project-automation-plus@v0.13.0
         with:
           project-url: "https://github.com/orgs/TVRCloud/projects/7"
           github-token: ${{ secrets.GITHUB_TOKEN }}
