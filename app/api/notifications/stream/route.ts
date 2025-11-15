@@ -1,28 +1,36 @@
-import { subscribe, initStream } from "@/lib/notificationStream";
-import "@/lib/mongodb";
+import { NextResponse } from "next/server";
+import connectDB from "@/lib/mongodb";
+import { Notification } from "@/models/notification";
 
-export async function GET(req: Request) {
-  initStream();
+export const GET = async () => {
+  await connectDB();
 
-  return new Response(
-    new ReadableStream({
-      start(controller) {
-        const unsub = subscribe((event) =>
-          controller.enqueue(`data: ${JSON.stringify(event)}\n\n`)
-        );
+  const changeStream = Notification.watch([], {
+    fullDocument: "updateLookup",
+  });
 
-        req.signal.addEventListener("abort", () => {
-          unsub();
-          controller.close();
-        });
-      },
-    }),
-    {
-      headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
-      },
-    }
-  );
-}
+  const stream = new ReadableStream({
+    start(controller) {
+      changeStream.on("change", (change) => {
+        controller.enqueue(`data: ${JSON.stringify(change.fullDocument)}\n\n`);
+      });
+
+      changeStream.on("error", (err) => {
+        console.error("ChangeStream error:", err);
+        controller.close();
+      });
+    },
+
+    cancel() {
+      changeStream.close();
+    },
+  });
+
+  return new NextResponse(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
+};
