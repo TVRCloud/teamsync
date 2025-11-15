@@ -6,12 +6,12 @@ on:
       - "*"
 
 jobs:
-  move-on-branch:
+  move_issue:
     runs-on: ubuntu-latest
     permissions:
       issues: read
       contents: read
-      id-token: write
+      project: write
 
     steps:
       - name: Extract issue number from branch name
@@ -22,7 +22,7 @@ jobs:
           echo "ISSUE_NUMBER=$ISSUE_NUMBER" >> $GITHUB_ENV
 
       - name: Move project card to In Progress
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -30,35 +30,27 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            // 1. List project cards for the issue
-            const { data: cards } = await github.rest.projects.listCards({
-              column_id: /* You may need to list all columns first, or know project columns */,
-              per_page: 100
-            });
-
-            // Actually, we should find the card via repository issue relationship
-            // Better: list all project cards for the repository’s project and filter by content_id = issue.id
-
-            // 2. Find the card for this issue
-            const issue = await github.rest.issues.get({
-              owner,
-              repo,
-              issue_number: issueNumber
-            });
-
-            // Fetch all cards in all columns of your project:
-            const projectId = /* YOUR PROJECT ID */;
+            // 1. List all columns of your project
+            const projectId = 7;
             const { data: columns } = await github.rest.projects.listColumns({
               project_id: projectId
             });
 
+            // 2. Find the "In Progress" column
+            const inProgress = columns.find(c => c.name === "In Progress");
+            if (!inProgress) {
+              core.setFailed('In Progress column not found');
+              return;
+            }
+
+            // 3. Find the card for this issue
             let cardToMove = null;
             for (const col of columns) {
-              const { data: colCards } = await github.rest.projects.listCards({
+              const { data: cards } = await github.rest.projects.listCards({
                 column_id: col.id,
                 per_page: 100
               });
-              const found = colCards.find(c => c.content_url && c.content_url.endsWith(`/issues/${issueNumber}`));
+              const found = cards.find(c => c.content_url && c.content_url.endsWith(`/issues/${issueNumber}`));
               if (found) {
                 cardToMove = found;
                 break;
@@ -70,17 +62,11 @@ jobs:
               return;
             }
 
-            // 3. Move the card
-            const inProgressColumn = columns.find(c => c.name === "In Progress");
-            if (!inProgressColumn) {
-              core.setFailed(`Column "In Progress" not found in project`);
-              return;
-            }
-
+            // 4. Move the card
             await github.rest.projects.moveCard({
               card_id: cardToMove.id,
-              position: "top",
-              column_id: inProgressColumn.id
+              column_id: inProgress.id,
+              position: "top"
             });
 
-            console.log(`Moved card for issue #${issueNumber} to column In Progress`);
+            console.log(`Moved issue #${issueNumber} to In Progress`);
