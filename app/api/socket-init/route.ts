@@ -1,5 +1,5 @@
 import { Server as IOServer } from "socket.io";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 // Global socket instance
 let io: IOServer | null = null;
@@ -46,7 +46,7 @@ export function getIO() {
   return io;
 }
 
-export async function POST(req: NextRequest) {
+export async function POST() {
   try {
     const ioInstance = getIO();
     return NextResponse.json({
