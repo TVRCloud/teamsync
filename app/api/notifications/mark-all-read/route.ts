@@ -1,16 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextRequest, NextResponse } from "next/server";
-import mongoose from "mongoose";
+import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
+import { authenticateUser } from "@/lib/authenticateUser";
+import { isValidObjectId, toObjectId } from "@/utils/object-id";
 import { Notification } from "@/models/notification";
 import { NotificationRead } from "@/models/notification-read";
 
-export async function PATCH(request: NextRequest) {
+export async function PATCH() {
   try {
     await connectDB();
+    const { user, errorResponse } = await authenticateUser();
+    if (errorResponse) return errorResponse;
 
-    const body = await request.json();
-    const { userId, userRole } = body;
+    const userId = user?.id;
+    const userRole = user?.role;
 
     if (!userId) {
       return NextResponse.json(
@@ -19,7 +21,14 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const userObjectId = new mongoose.Types.ObjectId(userId);
+    if (!isValidObjectId(userId)) {
+      return NextResponse.json(
+        { error: "Invalid userId format" },
+        { status: 400 }
+      );
+    }
+
+    const userObjectId = toObjectId(userId);
 
     // Get all visible notifications
     const filter = {
@@ -47,7 +56,7 @@ export async function PATCH(request: NextRequest) {
 
     // Create records for unread notifications
     const unreadNotificationIds = notificationIds.filter(
-      (id: any) => !readIds.includes(id.toString())
+      (id) => !readIds.includes(id)
     );
 
     if (unreadNotificationIds.length > 0) {
