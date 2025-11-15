@@ -1,72 +1,74 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Server as HTTPServer } from "http";
-import { Server as IOServer, Socket } from "socket.io";
+import { EventEmitter } from "events";
 
-let io: IOServer | null = null;
+// In-memory event emitter for broadcasting notifications
+class NotificationBroadcaster extends EventEmitter {
+  private roomSubscriptions: Map<string, Set<string>> = new Map();
 
-export function initSocket(httpServer: HTTPServer) {
-  if (io) return io;
+  joinRoom(userId: string, room: string) {
+    if (!this.roomSubscriptions.has(room)) {
+      this.roomSubscriptions.set(room, new Set());
+    }
+    this.roomSubscriptions.get(room)?.add(userId);
+    console.log("[v0] User joined room:", { userId, room });
+  }
 
-  io = new IOServer(httpServer, {
-    cors: {
-      origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-      credentials: true,
-    },
-    transports: ["websocket", "polling"],
-  });
+  broadcastToRoom(room: string, eventType: string, data: any) {
+    console.log("[v0] Broadcasting to room:", {
+      room,
+      eventType,
+      dataTitle: data?.title,
+    });
+    this.emit(`${room}:${eventType}`, data);
+  }
 
-  io.on("connection", (socket: Socket) => {
-    console.log("[Socket] User connected:", socket.id);
-
-    // Listen for room joins
-    socket.on("join-rooms", (data: { userId: string; role: string }) => {
-      // Join global room
-      socket.join("ALL");
-
-      // Join role room
-      socket.join(`ROLE_${data.role}`);
-
-      // Join user-specific room
-      socket.join(`USER_${data.userId}`);
-
-      console.log(
-        `[Socket] User joined rooms - userId: ${data.userId}, role: ${data.role}`
-      );
+  emitNotification(
+    audienceType: "ALL" | "ROLE" | "USER",
+    data: any,
+    roles?: string[],
+    userIds?: string[]
+  ) {
+    console.log("[v0] Emitting notification:", {
+      audienceType,
+      roles,
+      userIds,
     });
 
-    socket.on("disconnect", () => {
-      console.log("[Socket] User disconnected:", socket.id);
-    });
-  });
-
-  return io;
+    if (audienceType === "ALL") {
+      this.broadcastToRoom("ALL", "notification", data);
+    } else if (audienceType === "ROLE" && roles?.length) {
+      roles.forEach((role) => {
+        this.broadcastToRoom(`ROLE_${role}`, "notification", data);
+      });
+    } else if (audienceType === "USER" && userIds?.length) {
+      userIds.forEach((userId) => {
+        this.broadcastToRoom(`USER_${userId}`, "notification", data);
+      });
+    }
+  }
 }
 
-export function getIO() {
-  if (!io) {
-    throw new Error("Socket.IO not initialized");
-  }
-  return io;
+export const notificationBroadcaster = new NotificationBroadcaster();
+
+export function emitNotification(
+  audienceType: "ALL" | "ROLE" | "USER",
+  data: any,
+  roles?: string[],
+  userIds?: string[]
+) {
+  notificationBroadcaster.emitNotification(audienceType, data, roles, userIds);
 }
 
 export function emitToNotificationRooms(
   audienceType: "ALL" | "ROLE" | "USER",
   roles?: string[],
   userIds?: string[],
-  eventName: string = "notification",
+  // eventName: string = 'notification',
   data?: any
 ) {
-  if (!io) return;
+  notificationBroadcaster.emitNotification(audienceType, data, roles, userIds);
+}
 
-  if (audienceType === "ALL") {
-    io.to("ALL").emit(eventName, data);
-  } else if (audienceType === "ROLE" && roles) {
-    roles.forEach((role) => {
-      io?.to(`ROLE_${role}`).emit(eventName, data);
-    });
-  } else if (audienceType === "USER" && userIds) {
-    userIds.forEach((userId) => {
-      io?.to(`USER_${userId}`).emit(eventName, data);
-    });
-  }
+export function getIO() {
+  return notificationBroadcaster;
 }
