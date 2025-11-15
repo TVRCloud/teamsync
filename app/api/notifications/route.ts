@@ -2,13 +2,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectDB from "@/lib/mongodb";
-import { INotification, Notification } from "@/models/notification";
+import { Notification } from "@/models/notification";
 import { NotificationRead } from "@/models/notification-read";
 import {
   CreateNotificationInput,
   NotificationWithRead,
 } from "@/types/notification";
 import { authenticateUser } from "@/lib/authenticateUser";
+import { emitNotification } from "@/lib/socket";
+import { isValidObjectId, toObjectId } from "@/utils/object-id";
 
 // GET /api/notifications - Fetch notifications with pagination
 export async function GET(request: NextRequest) {
@@ -30,7 +32,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    if (!isValidObjectId(userId)) {
+      return NextResponse.json(
+        { error: "Invalid userId format" },
+        { status: 400 }
+      );
+    }
+
     const skip = (page - 1) * limit;
+    const userObjectId = toObjectId(userId);
 
     // Build query filter
     const filter: any = {
@@ -40,7 +50,7 @@ export async function GET(request: NextRequest) {
           audienceType: "ROLE",
           roles: { $in: [searchParams.get("userRole") || "user"] },
         },
-        { audienceType: "USER", users: new mongoose.Types.ObjectId(userId) },
+        { audienceType: "USER", users: userObjectId },
       ],
     };
 
@@ -53,10 +63,9 @@ export async function GET(request: NextRequest) {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .lean<INotification[]>();
+      .lean();
 
     // Fetch read status for user
-    const userObjectId = new mongoose.Types.ObjectId(userId);
     const readRecords = await NotificationRead.find({
       userId: userObjectId,
       notificationId: { $in: notifications.map((n) => n._id) },
@@ -67,13 +76,11 @@ export async function GET(request: NextRequest) {
     );
 
     // Merge notifications with read status
-    const notificationsWithRead: NotificationWithRead[] = notifications.map(
-      (notif) => ({
-        notification: notif,
-        read: !!readMap.has(notif._id.toString()),
-        readAt: readMap.get(notif._id.toString())?.readAt,
-      })
-    );
+    const notificationsWithRead = notifications.map((notif: any) => ({
+      notification: notif,
+      read: !!readMap.has(notif._id.toString()),
+      readAt: readMap.get(notif._id.toString())?.readAt,
+    }));
 
     const total = await Notification.countDocuments(filter);
 
@@ -94,6 +101,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
+    const { user, errorResponse } = await authenticateUser();
+    if (errorResponse) return errorResponse;
 
     const body: CreateNotificationInput = await request.json();
 
@@ -118,8 +127,24 @@ export async function POST(request: NextRequest) {
 
     await notification.save();
 
-    // TODO: Emit socket event to relevant rooms
-    // getIO().to(getRoomName(body.audienceType, body.roles, body.users)).emit('new-notification', notification);
+    try {
+      console.log("[v0] Broadcasting notification after save");
+      emitNotification(
+        body.audienceType as "ALL" | "ROLE" | "USER",
+        {
+          _id: notification._id,
+          type: notification.type,
+          title: notification.title,
+          body: notification.body,
+          audienceType: notification.audienceType,
+          createdAt: notification.createdAt,
+        },
+        body.roles,
+        body.users?.map(String)
+      );
+    } catch (socketError) {
+      console.error("[v0] Broadcast error:", socketError);
+    }
 
     return NextResponse.json({ data: notification }, { status: 201 });
   } catch (error) {
