@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
 import connectDB from "@/lib/mongodb";
 import { Notification } from "@/models/notification";
 import { NotificationRead } from "@/models/notification-read";
 import { UnreadCountResponse } from "@/types/notification";
 import { authenticateUser } from "@/lib/authenticateUser";
+import { isValidObjectId, toObjectId } from "@/utils/object-id";
 
 export async function GET() {
   try {
@@ -14,6 +14,7 @@ export async function GET() {
 
     const userId = user?.id;
     const userRole = user?.role;
+
     if (!userId) {
       return NextResponse.json(
         { error: "userId is required" },
@@ -21,7 +22,14 @@ export async function GET() {
       );
     }
 
-    const userObjectId = new mongoose.Types.ObjectId(userId);
+    if (!isValidObjectId(userId)) {
+      return NextResponse.json(
+        { error: "Invalid userId format" },
+        { status: 400 }
+      );
+    }
+
+    const userObjectId = toObjectId(userId);
 
     // Get all notifications the user should see
     const filter = {
