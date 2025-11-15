@@ -18,4 +18,7 @@ const UserSchema = new Schema(
   }
 );
 
+UserSchema.index({ email: 1 });
+UserSchema.index({ role: 1 });
+
 export default models.Users || model("Users", UserSchema, "users");
