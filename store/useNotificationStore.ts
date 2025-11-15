@@ -1,4 +1,5 @@
 "use client";
+import { useAuth } from "@/hooks/useUser";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { create } from "zustand";
@@ -17,11 +18,14 @@ interface NotificationState {
   markAsRead: (id: string, userId: string) => void;
   setAll: (items: NotificationItem[]) => void;
 }
+const MAX_NOTIFICATIONS = 20;
 
 export const useNotificationStore = create<NotificationState>((set) => ({
   notifications: [],
   addNotification: (n) =>
-    set((state) => ({ notifications: [n, ...state.notifications] })),
+    set((state) => ({
+      notifications: [n, ...state.notifications].slice(0, MAX_NOTIFICATIONS),
+    })),
   markAsRead: (id, userId) => {
     set((state) => ({
       notifications: state.notifications.map((n) =>
@@ -34,13 +38,20 @@ export const useNotificationStore = create<NotificationState>((set) => ({
       body: JSON.stringify({ userId, notificationId: id }),
     });
   },
-  setAll: (items) => set({ notifications: items }),
+  setAll: (items) =>
+    set({
+      notifications: items
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+        .slice(0, MAX_NOTIFICATIONS),
+    }),
 }));
 
-export const useNotificationStream = (user: {
-  id: string;
-  roles: string[];
-}) => {
+export const useNotificationStream = () => {
+  const { user } = useAuth();
+
   const addNotification = useNotificationStore((s) => s.addNotification);
 
   useEffect(() => {
