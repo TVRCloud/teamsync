@@ -27,6 +27,7 @@ import { useAuth } from "@/hooks/useUser";
 import { MobileMenu } from "./MobileMenu";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUserStore } from "@/store/useUserStore";
+import NavNotification from "./NavNotification";
 
 export function Header() {
   const { setTheme } = useTheme();
@@ -80,6 +81,8 @@ export function Header() {
           <div className="block md:md">
             <MobileMenu />
           </div>
+
+          <NavNotification />
 
           {/* User Dropdown */}
           {isLoading ? (
