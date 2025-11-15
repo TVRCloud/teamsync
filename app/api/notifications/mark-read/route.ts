@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import mongoose from "mongoose";
 import connectDB from "@/lib/mongodb";
 import { NotificationRead } from "@/models/notification-read";
 import { authenticateUser } from "@/lib/authenticateUser";
+import { isValidObjectId, toObjectId } from "@/utils/object-id";
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -12,6 +12,7 @@ export async function PATCH(request: NextRequest) {
 
     const body = await request.json();
     const { notificationId } = body;
+
     const userId = user?.id;
 
     if (!userId || !notificationId) {
@@ -21,8 +22,15 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const userObjectId = new mongoose.Types.ObjectId(userId);
-    const notifObjectId = new mongoose.Types.ObjectId(notificationId);
+    if (!isValidObjectId(userId) || !isValidObjectId(notificationId)) {
+      return NextResponse.json(
+        { error: "Invalid userId or notificationId format" },
+        { status: 400 }
+      );
+    }
+
+    const userObjectId = toObjectId(userId);
+    const notifObjectId = toObjectId(notificationId);
 
     // Use upsert to create or update
     const result = await NotificationRead.findOneAndUpdate(
