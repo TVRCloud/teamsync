@@ -33,7 +33,6 @@ import {
 } from "@/store/useNotificationStore";
 import { useRecentAlerts } from "@/hooks/useNotifications";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import { Separator } from "./ui/separator";
 import { DateTime } from "luxon";
 import { useRouter } from "next/navigation";
@@ -159,22 +158,13 @@ const NavNotification = () => {
 
                   {notifications.length > 0 && (
                     <DropdownMenuItem
-                      onClick={() => {
-                        toast("Dummy don't click me");
-                      }}
+                      onClick={() => clearAll()}
+                      className="text-destructive"
                     >
-                      <Bell className="w-4 h-4 mr-2" />
-                      Preferences
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Clear all
                     </DropdownMenuItem>
                   )}
-
-                  <DropdownMenuItem
-                    onClick={() => clearAll()}
-                    className="text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Clear all
-                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -305,14 +295,14 @@ const NavNotification = () => {
             )}
           </div>
         </ScrollArea>
+
         {notifications.length > 0 && (
           <>
-            <Separator />
-            <div className="p-3">
+            <Separator className="opacity-50" />
+            <div>
               <Button
                 variant="ghost"
-                className="w-full text-sm"
-                size="sm"
+                className="w-full text-xs h-8 hover:bg-accent/80 text-muted-foreground hover:text-foreground font-medium"
                 onClick={() => {
                   router.push("/notifications");
                 }}
