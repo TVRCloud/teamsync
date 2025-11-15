@@ -9,7 +9,6 @@ import {
 } from "@/store/useNotificationStore";
 
 const USER_ID = "YOUR_USER_ID";
-const USER_ROLE = "user";
 
 export default function TestNotifications() {
   const [open, setOpen] = useState(false);
@@ -18,7 +17,7 @@ export default function TestNotifications() {
   // Load existing notifications from API
   useEffect(() => {
     async function fetchNotifications() {
-      const res = await fetch(`/api/notifications/list?userId=${USER_ID}`);
+      const res = await fetch(`/api/notifications/list`);
       const data = await res.json();
       setAll(
         data.map((n: any) => ({
@@ -34,7 +33,7 @@ export default function TestNotifications() {
   }, [setAll]);
 
   // Connect to real-time stream
-  useNotificationStream({ id: USER_ID, roles: [USER_ROLE] });
+  useNotificationStream();
 
   return (
     <div className="p-4 flex flex-col gap-4">
