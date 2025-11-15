@@ -1,0 +1,27 @@
+name: Move Issue on Branch Link
+
+on:
+  create:
+    branches:
+      - "*"
+
+jobs:
+  move-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract issue number from branch name
+        id: extract
+        run: |
+          # Assume your branch naming includes the issue number: issue-123, feature-123, etc.
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          ISSUE_NUMBER=$(echo $BRANCH_NAME | grep -o '[0-9]\+')
+          echo "ISSUE_NUMBER=$ISSUE_NUMBER" >> $GITHUB_ENV
+
+      - name: Move issue to In Progress
+        uses: peter-evans/github-project-automation-plus@v0.13.0
+        with:
+          project-url: "https://github.com/orgs/TVRCloud/projects/7"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          action: "move"
+          issue-number: ${{ env.ISSUE_NUMBER }}
+          column-name: "In Progress"
