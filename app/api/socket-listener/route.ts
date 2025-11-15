@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import { notificationBroadcaster } from "@/lib/socket";
 
@@ -24,7 +26,6 @@ export async function GET(request: NextRequest) {
 
   // Setup listener for this user's rooms
   const rooms = ["ALL", `ROLE_${userRole}`, `USER_${userId}`];
-  const notifications: any[] = [];
   let notificationReceived = false;
 
   // Create promise that resolves when notification arrives or timeout
