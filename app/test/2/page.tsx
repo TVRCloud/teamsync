@@ -1,17 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useState, useEffect } from "react";
-import NotificationBadge from "@/components/notifications/NotificationBadge";
-import NotificationDrawer from "@/components/notifications/NotificationDrawer";
+import { useEffect } from "react";
 import {
   useNotificationStore,
   useNotificationStream,
 } from "@/store/useNotificationStore";
-
-const USER_ID = "YOUR_USER_ID";
+import NotificationForm from "@/components/notifications/NotificationForm";
 
 export default function TestNotifications() {
-  const [open, setOpen] = useState(false);
   const setAll = useNotificationStore((s) => s.setAll);
 
   // Load existing notifications from API
@@ -37,9 +33,6 @@ export default function TestNotifications() {
 
   return (
     <div className="p-4 flex flex-col gap-4">
-      <NotificationBadge onClick={() => setOpen(true)} />
-      <NotificationDrawer open={open} setOpen={setOpen} userId={USER_ID} />
-
       <button
         onClick={async () => {
           await fetch("/api/notifications/create", {
@@ -57,6 +50,8 @@ export default function TestNotifications() {
       >
         Send Test Notification
       </button>
+
+      <NotificationForm />
     </div>
   );
 }
