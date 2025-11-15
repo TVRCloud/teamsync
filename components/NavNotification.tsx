@@ -304,6 +304,7 @@ const NavNotification = () => {
                 variant="ghost"
                 className="w-full text-xs h-8 hover:bg-accent/80 text-muted-foreground hover:text-foreground font-medium"
                 onClick={() => {
+                  setIsOpen(false);
                   router.push("/notifications");
                 }}
               >
