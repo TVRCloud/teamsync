@@ -80,7 +80,6 @@ notificationReadSchema.index({ createdAt: -1 });
 export const Notification =
   models.Notification ||
   model<INotification>("Notification", notificationSchema);
-
 export const NotificationRead =
   models.NotificationRead ||
   model<INotificationRead>("NotificationRead", notificationReadSchema);
