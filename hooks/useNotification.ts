@@ -1,12 +1,12 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { INotification } from "@/models/notification";
 import {
   CreateNotificationInput,
   NotificationWithRead,
   UnreadCountResponse,
 } from "@/types/notification";
-import { useCallback, useEffect, useState } from "react";
-import io, { Socket } from "socket.io-client";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import useSWR from "swr";
 
 export function useCreateNotification() {
@@ -100,50 +100,80 @@ export function useMarkRead() {
 }
 
 export function useNotificationsSocket(userId: string, userRole: string) {
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [newNotification, setNewNotification] = useState<INotification | null>(
     null
   );
-  const [isConnected, setIsConnected] = useState(false);
+  const [isConnected, setIsConnected] = useState(true);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const isPollingRef = useRef(false);
 
   useEffect(() => {
-    const socketUrl =
-      process.env.NEXT_PUBLIC_SOCKET_URL || window.location.origin;
-    const newSocket = io(socketUrl, {
-      transports: ["websocket", "polling"],
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      reconnectionAttempts: 5,
-    });
+    if (isPollingRef.current) {
+      console.log("[v0] Polling already active");
+      return;
+    }
 
-    newSocket.on("connect", () => {
-      console.log("[Socket] Connected:", newSocket.id);
-      setIsConnected(true);
+    isPollingRef.current = true;
+    setIsConnected(true);
 
-      // Join rooms
-      newSocket.emit("join-rooms", { userId, role: userRole });
-    });
+    console.log("[v0] Starting notification polling:", { userId, userRole });
 
-    newSocket.on("notification", (data: INotification) => {
-      console.log("[Socket] New notification received:", data);
-      setNewNotification(data);
-    });
+    const poll = async () => {
+      try {
+        const response = await fetch(
+          `/api/socket-listener?userId=${encodeURIComponent(
+            userId
+          )}&userRole=${encodeURIComponent(userRole)}`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
 
-    newSocket.on("disconnect", () => {
-      console.log("[Socket] Disconnected");
-      setIsConnected(false);
-    });
+        if (!response.ok) {
+          console.error("[v0] Poll error:", response.status);
+          return;
+        }
 
-    setSocket(newSocket);
+        const data = await response.json();
+
+        if (data.received && data.notification) {
+          console.log(
+            "[v0] Notification received via polling:",
+            data.notification.title
+          );
+          setNewNotification(data.notification);
+
+          toast.success(data.notification.title, {
+            description: data.notification.body,
+            duration: 4000,
+          });
+        }
+      } catch (error) {
+        console.error("[v0] Polling error:", error);
+      }
+    };
+
+    // Start polling immediately and then every request
+    const startPolling = async () => {
+      while (isPollingRef.current) {
+        await poll();
+      }
+    };
+
+    startPolling();
 
     return () => {
-      newSocket.close();
+      console.log("[v0] Stopping notification polling");
+      isPollingRef.current = false;
+      if (pollingRef.current) {
+        clearTimeout(pollingRef.current);
+      }
     };
   }, [userId, userRole]);
 
   return {
-    socket,
+    socket: null,
     newNotification,
     isConnected,
   };
@@ -221,6 +251,16 @@ export function useUnreadCount(
     },
     { refreshInterval: interval, revalidateOnFocus: false }
   );
+
+  const { newNotification } = useNotificationsSocket(userId, userRole);
+
+  useEffect(() => {
+    // When a new notification arrives via socket, revalidate the unread count
+    if (newNotification) {
+      console.log("[v0] New notification received, updating unread count");
+      mutate();
+    }
+  }, [newNotification, mutate]);
 
   return {
     unreadCount: data?.unreadCount || 0,
