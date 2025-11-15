@@ -32,10 +32,6 @@ const ChangePassword = () => {
     resolver: zodResolver(changePasswordSchema),
   });
 
-  const handleRevealPasswordForm = () => {
-    setIsPasswordFormVisible(true);
-  };
-
   const onSubmit = (data: TChangePasswordSchema) => {
     changePass.mutate(data, {
       onSuccess: () => {
@@ -71,7 +67,7 @@ const ChangePassword = () => {
                 className="overflow-hidden"
               >
                 <Button
-                  onClick={handleRevealPasswordForm}
+                  onClick={() => setIsPasswordFormVisible(true)}
                   variant="outline"
                   className="group"
                 >
