@@ -10,7 +10,6 @@ import { useNotificationStore } from "@/store/useNotificationStore";
 export default function NotificationDrawer({
   open,
   setOpen,
-  userId,
 }: {
   open: boolean;
   setOpen: (v: boolean) => void;
@@ -19,7 +18,7 @@ export default function NotificationDrawer({
   const notifications = useNotificationStore((s) => s.notifications);
   const markAsRead = useNotificationStore((s) => s.markAsRead);
 
-  const handleClick = (id: string) => markAsRead(id, userId);
+  const handleClick = (id: string) => markAsRead(id);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
