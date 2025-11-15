@@ -1,3 +1,4 @@
+import { authenticateUser } from "@/lib/authenticateUser";
 import connectDB from "@/lib/mongodb";
 import { NotificationRead } from "@/models/notification";
 import { NextResponse } from "next/server";
@@ -5,10 +6,15 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   try {
     await connectDB();
+    const { user, errorResponse } = await authenticateUser();
+    if (errorResponse) return errorResponse;
 
-    const { userId, notificationId } = await req.json();
-    if (!userId || !notificationId)
+    const userId = user.id;
+    const { notificationId } = await req.json();
+
+    if (!userId || !notificationId) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+    }
 
     await NotificationRead.updateOne(
       { userId, notificationId },
@@ -18,7 +24,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error("POST /api/notifications/read error:", error);
+    console.error(error);
     return NextResponse.json({ error: "Server Error" }, { status: 500 });
   }
 }
