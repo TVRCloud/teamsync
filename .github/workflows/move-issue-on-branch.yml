@@ -11,7 +11,7 @@ jobs:
     permissions:
       issues: read
       contents: read
-      project: write
+      projects: write
 
     steps:
       - name: Extract issue number from branch name
@@ -29,21 +29,20 @@ jobs:
             const issueNumber = parseInt(process.env.ISSUE_NUMBER, 10);
             const owner = context.repo.owner;
             const repo = context.repo.repo;
+            const projectId = 7; // Your project ID
 
-            // 1. List all columns of your project
-            const projectId = 7;
+            // Get all columns in the project
             const { data: columns } = await github.rest.projects.listColumns({
               project_id: projectId
             });
 
-            // 2. Find the "In Progress" column
             const inProgress = columns.find(c => c.name === "In Progress");
             if (!inProgress) {
-              core.setFailed('In Progress column not found');
+              core.setFailed('Column "In Progress" not found');
               return;
             }
 
-            // 3. Find the card for this issue
+            // Find the card for this issue
             let cardToMove = null;
             for (const col of columns) {
               const { data: cards } = await github.rest.projects.listCards({
@@ -62,11 +61,11 @@ jobs:
               return;
             }
 
-            // 4. Move the card
+            // Move the card to In Progress
             await github.rest.projects.moveCard({
               card_id: cardToMove.id,
               column_id: inProgress.id,
               position: "top"
             });
 
-            console.log(`Moved issue #${issueNumber} to In Progress`);
+            console.log(`Moved issue #${issueNumber} to "In Progress"`);
